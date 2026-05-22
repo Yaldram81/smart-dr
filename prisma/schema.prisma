@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  password     String
+  age          Int?
+  gender       String?
+  bloodGroup   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  predictions  Prediction[]
+}
+
+model Disease {
+  id                String           @id @default(cuid())
+  name              String           @unique
+  description       String
+  specialist        String
+  severity          String
+  precautions       String
+  medications       String
+  diet              String
+  workout           String?
+  symptoms          DiseaseSymptom[]
+  createdAt         DateTime         @default(now())
+}
+
+model Symptom {
+  id                String           @id @default(cuid())
+  name              String           @unique
+  category          String
+  description       String?
+  diseases          DiseaseSymptom[]
+  createdAt         DateTime         @default(now())
+}
+
+model DiseaseSymptom {
+  id         String  @id @default(cuid())
+  diseaseId  String
+  symptomId  String
+  weight     Float   @default(1.0)
+  disease    Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  symptom    Symptom @relation(fields: [symptomId], references: [id], onDelete: Cascade)
+
+  @@unique([diseaseId, symptomId])
+}
+
+model Prediction {
+  id              String    @id @default(cuid())
+  userId          String
+  selectedSymptoms String
+  results         String
+  llmAnalysis     String?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
