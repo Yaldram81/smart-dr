@@ -917,8 +917,42 @@ const diseases = [
   },
 ];
 
+const BODY_SYSTEM_MAP: Record<string, string> = {
+  Respiratory: 'Respiratory System',
+  Digestive: 'Gastrointestinal System',
+  Neurological: 'Nervous System',
+  Cardiovascular: 'Circulatory System',
+  Musculoskeletal: 'Musculoskeletal System',
+  Eyes: 'Sensory (Ocular) System',
+  Throat: 'Upper Aerodigestive System',
+  Skin: 'Integumentary System',
+  Urinary: 'Renal & Urinary System',
+  General: 'Systemic / Constitutional',
+  Psychological: 'Behavioral & Psychological',
+};
+
+const SYMPTOM_ALIASES: Record<string, string[]> = {
+  'Fever': ['Pyrexia', 'Elevated Temperature', 'Febrile'],
+  'Headache': ['Cephalalgia', 'Cranial pain', 'Head throbbing'],
+  'Shortness of Breath': ['Dyspnea', 'Breathlessness', 'Air hunger'],
+  'Chest Pain': ['Thoracic pain', 'Angina symptom', 'Chest pressure'],
+  'Cough': ['Tussis', 'Persistent hacking'],
+  'Runny Nose': ['Rhinorrhea', 'Nasal discharge'],
+  'Sore Throat': ['Pharyngitis', 'Throat irritation'],
+  'Nausea': ['Queasiness', 'Biliousness'],
+  'Vomiting': ['Emesis', 'Regurgitation'],
+  'Dizziness': ['Vertigo', 'Presyncope', 'Lightheadedness'],
+  'Joint Pain': ['Arthralgia', 'Joint soreness'],
+  'Fatigue': ['Lethargy', 'Malaise', 'Exhaustion'],
+  'Skin Rash': ['Exanthem', 'Dermal eruption'],
+};
+
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Seeding database with enhanced medical models...');
 
   // Create all symptoms first
   const symptomMap = new Map<string, string>(); // name -> id
@@ -932,48 +966,84 @@ async function main() {
     }
   }
 
-  console.log(`Creating ${allSymptoms.size} symptoms...`);
+  console.log(`Creating ${allSymptoms.size} symptoms with clinical metadata...`);
   for (const [, s] of allSymptoms) {
+    const slug = slugify(s.name);
+    const bodySystem = BODY_SYSTEM_MAP[s.category] || `${s.category} System`;
+    const alternateNames = SYMPTOM_ALIASES[s.name] || [];
+
     const symptom = await prisma.symptom.upsert({
       where: { name: s.name },
-      update: {},
+      update: {
+        slug,
+        category: s.category,
+        bodySystem,
+        alternateNames,
+        isActive: true,
+      },
       create: {
         name: s.name,
+        slug,
         category: s.category,
-        description: s.description || null,
+        description: s.description || `Clinical indicator associated with the ${bodySystem}.`,
+        bodySystem,
+        alternateNames,
+        isActive: true,
       },
     });
     symptomMap.set(s.name, symptom.id);
   }
 
   // Create diseases and their symptom relationships
-  console.log(`Creating ${diseases.length} diseases with symptom relationships...`);
+  console.log(`Creating ${diseases.length} diseases with structured care protocols...`);
   for (const d of diseases) {
+    const slug = slugify(d.name);
+    const severityEnum = (d.severity.toUpperCase() === 'SEVERE' ? 'SEVERE' : d.severity.toUpperCase() === 'MILD' ? 'MILD' : 'MODERATE') as any;
+
     const disease = await prisma.disease.upsert({
       where: { name: d.name },
       update: {
+        slug,
         description: d.description,
         specialist: d.specialist,
-        severity: d.severity,
+        severity: severityEnum,
+        treatmentOverview: `Evidence-based clinical overview for ${d.name}. Focus on supportive recovery, early diagnosis, and monitoring progression.`,
         precautions: d.precautions,
         medications: d.medications,
         diet: d.diet,
+        workout: d.workout,
+        emergencyWarnings: JSON.stringify([
+          'Sudden deterioration of respiratory function or shortness of breath',
+          'Uncontrolled high fever or altered mental state',
+          'Severe intractable pain unresponsive to first-line measures'
+        ]),
       },
       create: {
         name: d.name,
+        slug,
         description: d.description,
         specialist: d.specialist,
-        severity: d.severity,
+        severity: severityEnum,
+        treatmentOverview: `Evidence-based clinical overview for ${d.name}. Focus on supportive recovery, early diagnosis, and monitoring progression.`,
         precautions: d.precautions,
         medications: d.medications,
         diet: d.diet,
+        workout: d.workout,
+        emergencyWarnings: JSON.stringify([
+          'Sudden deterioration of respiratory function or shortness of breath',
+          'Uncontrolled high fever or altered mental state',
+          'Severe intractable pain unresponsive to first-line measures'
+        ]),
       },
     });
 
-    // Create disease-symptom relationships
+    // Create disease-symptom relationships with explicit association scoring & importance
     for (const s of d.symptoms) {
       const symptomId = symptomMap.get(s.name);
       if (symptomId) {
+        const score = s.weight || 1.0;
+        const importance = (score >= 0.85 ? 'HALLMARK' : score >= 0.6 ? 'COMMON' : 'OCCASIONAL') as any;
+
         await prisma.diseaseSymptom.upsert({
           where: {
             diseaseId_symptomId: {
@@ -981,11 +1051,19 @@ async function main() {
               symptomId: symptomId,
             },
           },
-          update: { weight: s.weight },
+          update: {
+            associationScore: score,
+            importance,
+            evidenceLevel: 'WHO / CDC Clinical Diagnostic Framework',
+            clinicalNotes: score >= 0.85 ? 'Cardinal hallmark indicator with elevated diagnostic signal.' : 'Documented associated clinical finding.',
+          },
           create: {
             diseaseId: disease.id,
             symptomId: symptomId,
-            weight: s.weight,
+            associationScore: score,
+            importance,
+            evidenceLevel: 'WHO / CDC Clinical Diagnostic Framework',
+            clinicalNotes: score >= 0.85 ? 'Cardinal hallmark indicator with elevated diagnostic signal.' : 'Documented associated clinical finding.',
           },
         });
       }

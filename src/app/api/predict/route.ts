@@ -15,17 +15,23 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:3031';
 
 interface PredictionResult {
   disease: string;
-  confidence: number;
+  similarityScore: number; // 0-100% Symptom pattern similarity
+  confidence: number;      // Backward-compatible alias
   description: string;
   specialist: string;
   severity: string;
+  treatmentOverview?: string;
   precautions: string[];
-  medications: string[];
+  medications: string[];   // Educational reference: commonly used medications
   diet: string[];
   workout: string[];
+  emergencyWarnings?: string[];
   matchedSymptoms: string[];
   totalSymptoms: number;
+  contributingSymptoms?: { name: string; importance: string; score: number }[];
+  absentHallmarks?: { name: string; importance: string }[];
   contraindications?: string[];
+  algorithmVersion?: string;
 }
 
 // Clinical contraindication mappings for high-risk pairs
@@ -109,7 +115,16 @@ export async function POST(request: NextRequest) {
         where: { symptomId: { in: symptomIds } },
         include: {
           disease: {
-            include: { symptoms: { select: { symptomId: true, weight: true } } },
+            include: {
+              symptoms: {
+                select: {
+                  symptomId: true,
+                  associationScore: true,
+                  importance: true,
+                  symptom: { select: { name: true } },
+                },
+              },
+            },
           },
           symptom: { select: { id: true, name: true } },
         },
@@ -133,7 +148,7 @@ export async function POST(request: NextRequest) {
         const disease = ds.disease;
 
         if (!diseaseScores.has(diseaseId)) {
-          const totalWeight = disease.symptoms.reduce((sum: number, s: any) => sum + s.weight, 0);
+          const totalWeight = disease.symptoms.reduce((sum: number, s: any) => sum + s.associationScore, 0);
           diseaseScores.set(diseaseId, {
             matchedWeight: 0,
             totalWeight,
@@ -146,7 +161,7 @@ export async function POST(request: NextRequest) {
         // IDF weighting: rarer symptoms provide higher diagnostic signal
         const freq = symptomFrequency.get(ds.symptomId) || 1;
         const idf = Math.log((totalDiseaseCount + 1) / (freq + 1)) + 1.0;
-        entry.matchedWeight += ds.weight * idf;
+        entry.matchedWeight += ds.associationScore * idf;
         entry.matchedSymptoms.push(ds.symptom.name);
       }
 
@@ -157,44 +172,69 @@ export async function POST(request: NextRequest) {
           where: { id: diseaseId },
           select: {
             id: true, name: true, description: true, specialist: true, severity: true,
-            precautions: true, medications: true, diet: true, workout: true,
+            treatmentOverview: true, precautions: true, medications: true, diet: true,
+            workout: true, emergencyWarnings: true,
           }
         });
         if (!disease) continue;
 
-        // Base confidence derived from weighted ratio + symptom recall
+        // Base pattern similarity derived from weighted ratio + symptom recall
         const ratio = scoreData.matchedWeight / Math.max(scoreData.totalWeight, 1.0);
         const recall = scoreData.matchedSymptoms.length / Math.max(scoreData.diseaseObj.symptoms.length, 1);
-        let rawConfidence = Math.round((ratio * 0.7 + recall * 0.3) * 100);
+        let rawSimilarity = Math.round((ratio * 0.7 + recall * 0.3) * 100);
 
         // Demographic adjustment: apply clinical weighting if age is specified
         if (patientAge) {
           if (patientAge > 50 && ['Hypertension', 'Heart Disease', 'Osteoporosis', 'Glaucoma'].includes(disease.name)) {
-            rawConfidence = Math.min(rawConfidence + 5, 96);
+            rawSimilarity = Math.min(rawSimilarity + 5, 96);
           } else if (patientAge < 15 && ['Chickenpox', 'Common Cold', 'Mumps'].includes(disease.name)) {
-            rawConfidence = Math.min(rawConfidence + 5, 96);
+            rawSimilarity = Math.min(rawSimilarity + 5, 96);
           }
         }
 
-        const confidence = Math.min(Math.max(rawConfidence, 16), 98);
+        const similarityScore = Math.min(Math.max(rawSimilarity, 16), 98);
 
-        if (confidence >= 18) {
+        if (similarityScore >= 18) {
           const diseaseLower = disease.name.toLowerCase();
           const contraindications = CONTRAINDICATIONS[diseaseLower] || [];
 
+          // Explainability breakdown: contributing vs absent hallmark symptoms
+          const allDiseaseSyms = scoreData.diseaseObj.symptoms || [];
+          const contributingSymptoms = allDiseaseSyms
+            .filter((dsItem: any) => symptomIds.includes(dsItem.symptomId))
+            .map((dsItem: any) => ({
+              name: dsItem.symptom?.name || 'Associated symptom',
+              importance: dsItem.importance,
+              score: Math.round(dsItem.associationScore * 100),
+            }))
+            .sort((a: any, b: any) => b.score - a.score);
+
+          const absentHallmarks = allDiseaseSyms
+            .filter((dsItem: any) => !symptomIds.includes(dsItem.symptomId) && dsItem.importance === 'HALLMARK')
+            .map((dsItem: any) => ({
+              name: dsItem.symptom?.name || 'Hallmark symptom',
+              importance: dsItem.importance,
+            }));
+
           datasetPredictions.push({
             disease: disease.name,
-            confidence,
+            similarityScore,
+            confidence: similarityScore, // backward compatibility
             description: disease.description,
             specialist: disease.specialist,
             severity: disease.severity,
+            treatmentOverview: disease.treatmentOverview || undefined,
             precautions: JSON.parse(disease.precautions || '[]'),
             medications: JSON.parse(disease.medications || '[]'),
             diet: JSON.parse(disease.diet || '[]'),
             workout: JSON.parse(disease.workout || '[]'),
+            emergencyWarnings: JSON.parse(disease.emergencyWarnings || '[]'),
             matchedSymptoms: scoreData.matchedSymptoms,
             totalSymptoms: scoreData.diseaseObj.symptoms.length,
+            contributingSymptoms,
+            absentHallmarks,
             contraindications: contraindications.length > 0 ? contraindications : undefined,
+            algorithmVersion: 'v2.1-weighted-profile',
           });
         }
       }
@@ -285,14 +325,18 @@ ${isUrdu ? 'Write all values in authentic Urdu (اردو).' : ''}`
               .filter(s => symptomIds.includes(s.symptomId))
               .map(s => s.symptom.name);
 
+            const calcSim = matchedSymNames.length > 0
+              ? Math.min(Math.round((matchedSymNames.length / dbDisease.symptoms.length) * 100), 95)
+              : 65;
+
             predictions.push({
               disease: dbDisease.name,
-              confidence: matchedSymNames.length > 0
-                ? Math.min(Math.round((matchedSymNames.length / dbDisease.symptoms.length) * 100), 95)
-                : 65,
+              similarityScore: calcSim,
+              confidence: calcSim,
               description: aiPred.description || dbDisease.description,
               specialist: dbDisease.specialist,
               severity: dbDisease.severity,
+              treatmentOverview: (dbDisease as any).treatmentOverview || undefined,
               precautions: Array.isArray(aiPred.precautions) && aiPred.precautions.length > 0 ? aiPred.precautions : JSON.parse(dbDisease.precautions || '[]'),
               medications: Array.isArray(aiPred.medications) && aiPred.medications.length > 0 ? aiPred.medications : JSON.parse(dbDisease.medications || '[]'),
               diet: Array.isArray(aiPred.diets) && aiPred.diets.length > 0 ? aiPred.diets : JSON.parse(dbDisease.diet || '[]'),
@@ -300,14 +344,16 @@ ${isUrdu ? 'Write all values in authentic Urdu (اردو).' : ''}`
               matchedSymptoms: matchedSymNames.length > 0 ? matchedSymNames : symptomNames,
               totalSymptoms: dbDisease.symptoms.length,
               contraindications: contraindications.length > 0 ? contraindications : undefined,
+              algorithmVersion: 'Smart.Dr Online Hybrid AI v2.1',
             });
           } else {
             predictions.push({
               disease: aiPred.disease || 'Undifferentiated Condition',
+              similarityScore: 60,
               confidence: 60,
               description: aiPred.description || 'Clinical analysis pending further investigation.',
               specialist: 'General Physician',
-              severity: 'moderate',
+              severity: 'MODERATE',
               precautions: aiPred.precautions || [],
               medications: aiPred.medications || [],
               diet: aiPred.diets || [],
@@ -315,6 +361,7 @@ ${isUrdu ? 'Write all values in authentic Urdu (اردو).' : ''}`
               matchedSymptoms: symptomNames,
               totalSymptoms: symptomNames.length,
               contraindications: contraindications.length > 0 ? contraindications : undefined,
+              algorithmVersion: 'Smart.Dr Online Generative AI v2.1',
             });
           }
         }
@@ -382,6 +429,9 @@ ${isUrdu ? `1. **طبی خلاصہ (Summary)**
             selectedSymptoms: JSON.stringify([...new Set(symptomIds)]),
             results: JSON.stringify(topPredictions),
             llmAnalysis,
+            engineType: engine === 'local-ml' ? 'similarity-inference' : 'llm-augmented',
+            algorithmVersion: 'v2.1-weighted-profile',
+            modelVersion: 'gemini-2.5-flash',
           },
         });
         savedPredictionId = saved.id;
@@ -394,6 +444,8 @@ ${isUrdu ? `1. **طبی خلاصہ (Summary)**
       predictions: topPredictions,
       llmAnalysis,
       predictionId: savedPredictionId,
+      engine: engine === 'local-ml' ? 'similarity-inference' : 'llm-augmented',
+      algorithmVersion: 'v2.1-weighted-profile',
     });
   } catch (error) {
     console.error('Prediction API fatal error:', error);

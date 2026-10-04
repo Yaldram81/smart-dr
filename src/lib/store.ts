@@ -14,22 +14,34 @@ export interface User {
 export interface Symptom {
   id: string
   name: string
+  slug?: string
   category: string
   description?: string | null
+  imageUrl?: string | null
+  alternateNames?: string[]
+  bodySystem?: string | null
+  isActive?: boolean
 }
 
 export interface PredictionResult {
   disease: string
-  confidence: number
+  similarityScore: number // 0-100% Symptom pattern similarity
+  confidence: number      // Backward compatibility alias
   description: string
   specialist: string
   severity: string
+  treatmentOverview?: string
   precautions: string[]
-  medications: string[]
+  medications: string[]   // Educational reference: commonly used medications
   diet: string[]
   workout: string[]
+  emergencyWarnings?: string[]
   matchedSymptoms: string[]
   totalSymptoms: number
+  contributingSymptoms?: { name: string; importance: string; score: number }[]
+  absentHallmarks?: { name: string; importance: string }[]
+  contraindications?: string[]
+  algorithmVersion?: string
 }
 
 export interface HistoryPrediction {

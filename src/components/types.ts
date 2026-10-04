@@ -3,16 +3,22 @@ import type { Language } from '@/lib/urdu-translations'
 // Shared disease data type used across DiseaseBrowser and PredictionResults
 export interface DiseaseDataItem {
   name: string
-  severity: string
+  slug?: string
+  severity: Severity | string
   category: string
   specialist: string
   description: string
+  treatmentOverview?: string
+  emergencyWarnings?: string[]
   symptoms: string[]
   precautions: string[]
   medications: string[]
   diet: string[]
   workout: string[]
 }
+
+// Symptom importance taxonomy
+export type SymptomImportance = 'HALLMARK' | 'COMMON' | 'OCCASIONAL'
 
 // Notification type
 export interface Notification {
@@ -41,5 +47,6 @@ export interface MedicationEntry {
   taken: boolean
 }
 
-// Severity utility type
-export type Severity = 'mild' | 'moderate' | 'severe'
+// Clinically structured severity levels
+export type Severity = 'MILD' | 'MODERATE' | 'SEVERE' | 'CRITICAL' | 'mild' | 'moderate' | 'severe' | 'critical'
+

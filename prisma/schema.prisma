@@ -10,6 +10,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Severity {
+  MILD
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+enum SymptomImportance {
+  HALLMARK    // Cardinal pathognomonic symptom with highest diagnostic signal
+  COMMON      // Frequently present in majority of clinical presentations
+  OCCASIONAL  // Secondary, variable, or late-stage presentation
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -26,49 +39,81 @@ model User {
 model Disease {
   id                String           @id @default(cuid())
   name              String           @unique
+  slug              String           @unique
   description       String           @db.Text
   specialist        String
-  severity          String
-  precautions       String           @db.Text
-  medications       String           @db.Text
-  diet              String           @db.Text
-  workout           String?          @db.Text
+  severity          Severity         @default(MODERATE)
+  
+  // Educational & Care Guidance (Distinguishes education from prescription)
+  treatmentOverview String?          @db.Text
+  precautions       String           @db.Text // JSON string: clinical safeguards & home care
+  medications       String           @db.Text // JSON string: commonly used medications (educational reference)
+  diet              String           @db.Text // JSON string: nutritional guidance
+  workout           String?          @db.Text // JSON string: physical pacing & rest protocol
+  emergencyWarnings String?          @db.Text // JSON string: red-flag symptoms requiring emergency triage
+
   symptoms          DiseaseSymptom[]
   createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @default(now()) @updatedAt
+
+  @@index([severity])
 }
 
 model Symptom {
-  id                String           @id @default(cuid())
-  name              String           @unique
-  category          String
-  description       String?          @db.Text
-  diseases          DiseaseSymptom[]
-  createdAt         DateTime         @default(now())
+  id              String           @id @default(cuid())
+  name            String           @unique
+  slug            String           @unique
+  category        String
+  description     String?          @db.Text
+  imageUrl        String?
+  alternateNames  String[]         @default([])
+  bodySystem      String?          // e.g., "Respiratory", "Nervous System", "Cardiovascular"
+  isActive        Boolean          @default(true)
+
+  diseases        DiseaseSymptom[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now()) @updatedAt
 
   @@index([category])
+  @@index([bodySystem])
+  @@index([slug])
 }
 
 model DiseaseSymptom {
-  id         String  @id @default(cuid())
-  diseaseId  String
-  symptomId  String
-  weight     Float   @default(1.0)
-  disease    Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
-  symptom    Symptom @relation(fields: [symptomId], references: [id], onDelete: Cascade)
+  id               String            @id @default(cuid())
+  diseaseId        String
+  symptomId        String
+
+  // Explicit Association Scoring (Similarity weight, 0.0 - 1.0)
+  associationScore Float             @default(1.0)
+  importance       SymptomImportance @default(COMMON)
+  evidenceLevel    String?           // e.g., "CDC Guidelines", "WHO Clinical Protocol"
+  clinicalNotes    String?           @db.Text
+
+  disease          Disease           @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  symptom          Symptom           @relation(fields: [symptomId], references: [id], onDelete: Cascade)
 
   @@unique([diseaseId, symptomId])
   @@index([diseaseId])
   @@index([symptomId])
+  @@index([importance])
 }
 
 model Prediction {
-  id              String    @id @default(cuid())
-  userId          String
-  selectedSymptoms String   @db.Text
-  results         String    @db.Text
-  llmAnalysis     String?   @db.Text
-  createdAt       DateTime  @default(now())
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String    @id @default(cuid())
+  userId           String
+
+  selectedSymptoms String    @db.Text // JSON: array of symptom names/IDs
+  results          String    @db.Text // JSON: ranked candidates with similarity scores & explainability
+  llmAnalysis      String?   @db.Text // Gemini natural language synthesis
+
+  // Auditable Inference & Algorithm Versioning
+  engineType       String    @default("similarity-inference") // "similarity-inference" | "llm-augmented"
+  algorithmVersion String    @default("v2.1-weighted-profile")
+  modelVersion     String?   @default("gemini-2.5-flash")
+
+  createdAt        DateTime  @default(now())
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
