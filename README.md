@@ -89,10 +89,11 @@ The system evaluates user-reported symptoms across 187+ clinical manifestations,
                                                  │
                                                  ▼
                           ┌───────────────────────────────────────────────┐
-                          │             Next.js 16 Frontend               │
-                          │   • Zustand State Store  • App Router (v16)   │
-                          │   • Body Map Selector    • Voice Recognition  │
-                          │   • Framer Motion UI     • Nastaleeq Fonts    │
+                          │         Next.js 16 Multi-Page Architecture    │
+                          │   • Native App Router MPA • Deep-Link Routing │
+                          │   • / • /checker • /results • /dashboard      │
+                          │   • 3D Anatomy Model      • Voice Recognition │
+                          │   • Framer Motion UI      • Nastaleeq Fonts   │
                           └──────────────────────┬────────────────────────┘
                                                  │ HTTP / JSON API
                                                  ▼
@@ -101,16 +102,17 @@ The system evaluates user-reported symptoms across 187+ clinical manifestations,
                           │   • /api/predict         • /api/chat          │
                           │   • /api/symptoms        • /api/history       │
                           │   • /api/stats           • /api/auth/*        │
+                          │   • /api/interactions                         │
                           └───────┬───────────────────────────────┬───────┘
                                   │                               │
             ┌─────────────────────┴────────────┐   ┌──────────────┴────────────────────┐
             ▼                                  ▼   ▼                                   ▼
 ┌───────────────────────────┐      ┌─────────────────────────┐     ┌─────────────────────────┐
 │     Engine 1: Local ML    │      │    Engine 2: Online AI  │     │   Database & Storage    │
-│  • Weighted Symptom Matrix│      │  • Google Gemini 2.5    │     │  • SQLite via Prisma ORM│
-│  • SVC Classifier (3031)  │      │  • 6-Key JSON Schema    │     │  • User Profiles        │
-│  • 8 Curated Medical CSVs │      │  • Differential Analysis│     │  • Prediction History   │
-│  • Sub-10ms Offline Exec  │      │  • Z-AI Web SDK Pipeline│     │  • 187 Symptoms/42 Cond │
+│  • Weighted Symptom Matrix│      │  • Google Gemini 2.5    │     │  • PostgreSQL via Prisma│
+│  • In-Process Classifier  │      │  • 6-Key JSON Schema    │     │  • User Profiles        │
+│  • Sub-5ms Execution      │      │  • Differential Analysis│     │  • Prediction History   │
+│  • 187 Symptoms/42 Cond   │      │  • Bilingual Urdu/Eng   │     │  • High-Perf Indexes    │
 └───────────────────────────┘      └─────────────────────────┘     └─────────────────────────┘
 ```
 

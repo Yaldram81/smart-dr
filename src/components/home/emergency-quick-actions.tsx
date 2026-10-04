@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { Card, CardContent } from '@/components/ui/card'
@@ -73,7 +74,7 @@ const EMERGENCY_SYMPTOMS = [
 ]
 
 export function EmergencyQuickActions() {
-  const { setActiveSection } = useAppStore()
+  const router = useRouter()
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -148,7 +149,7 @@ export function EmergencyQuickActions() {
                       >
                         <Card
                           className="cursor-pointer group border-primary/20 hover:border-primary/40 transition-all hover:shadow-md bg-background/50"
-                          onClick={() => setActiveSection('checker')}
+                          onClick={() => router.push('/checker')}
                         >
                           <CardContent className="p-4 flex flex-col items-center text-center gap-2.5">
                             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -194,7 +195,7 @@ export function EmergencyQuickActions() {
                       >
                         <Card
                           className="cursor-pointer group border-amber-500/20 hover:border-amber-500/40 transition-all hover:shadow-md bg-background/50"
-                          onClick={() => setActiveSection('checker')}
+                          onClick={() => router.push('/checker')}
                         >
                           <CardContent className="p-4 flex flex-col items-center text-center gap-2.5">
                             <div className="size-10 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
@@ -275,7 +276,7 @@ export function EmergencyQuickActions() {
             </Button>
             <Button
               className="bg-red-600 hover:bg-red-700 text-white gap-2"
-              onClick={() => { setShowEmergencyDialog(false); setActiveSection('checker') }}
+              onClick={() => { setShowEmergencyDialog(false); router.push('/checker') }}
             >
               <Stethoscope className="size-4" />
               Check Symptoms

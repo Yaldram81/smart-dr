@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -58,10 +59,10 @@ export function FeaturesSection() {
                   <CardDescription className="leading-relaxed">{feature.description}</CardDescription>
                 </CardContent>
                 <CardFooter className="pt-0">
-                  <button className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors group/link" onClick={() => useAppStore.getState().setActiveSection('checker')}>
+                  <Link href="/checker" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors group/link">
                     Learn more
                     <ArrowRight className="size-3 group-hover/link:translate-x-0.5 transition-transform" />
-                  </button>
+                  </Link>
                 </CardFooter>
               </Card>
             </motion.div>

@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { getDisplayName, URDU_DISEASES, URDU_SYMPTOMS } from '@/lib/urdu-translations'
@@ -26,7 +28,8 @@ import { SeverityBadge } from '@/components/prediction-results/severity-badge'
 import { ConfidenceBar } from '@/components/prediction-results/confidence-bar'
 
 function PredictionResultsTab() {
-  const { predictions, llmAnalysis, setActiveSection, clearSelectedSymptoms, language, user } = useAppStore()
+  const router = useRouter()
+  const { predictions, llmAnalysis, clearSelectedSymptoms, language, user } = useAppStore()
 
   if (predictions.length === 0) {
     return (
@@ -34,9 +37,11 @@ function PredictionResultsTab() {
         <Stethoscope className="size-16 mx-auto text-muted-foreground/30 mb-4" />
         <h2 className="text-2xl font-bold mb-2">No Predictions Yet</h2>
         <p className="text-muted-foreground mb-6">Select your symptoms and run a prediction first.</p>
-        <Button onClick={() => setActiveSection('checker')} className="bg-primary text-primary-foreground gap-2">
-          <Stethoscope className="size-4" />
-          Go to Symptom Checker
+        <Button asChild className="bg-primary text-primary-foreground gap-2">
+          <Link href="/checker">
+            <Stethoscope className="size-4" />
+            Go to Symptom Checker
+          </Link>
         </Button>
       </div>
     )
@@ -54,9 +59,11 @@ function PredictionResultsTab() {
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       {/* Header */}
       <div className="mb-6">
-        <Button variant="ghost" size="sm" onClick={() => setActiveSection('checker')} className="mb-4 gap-1">
-          <ArrowLeft className="size-4" />
-          Back to Symptom Checker
+        <Button variant="ghost" size="sm" asChild className="mb-4 gap-1">
+          <Link href="/checker">
+            <ArrowLeft className="size-4" />
+            Back to Symptom Checker
+          </Link>
         </Button>
         <h2 className="text-3xl font-bold flex items-center gap-3">
           <Activity className="size-8 text-primary" />
@@ -304,17 +311,21 @@ function PredictionResultsTab() {
         <Button
           onClick={() => {
             clearSelectedSymptoms()
-            setActiveSection('checker')
+            router.push('/checker')
           }}
           className="bg-primary text-primary-foreground gap-2"
         >
           <Stethoscope className="size-4" />
           Check Again
         </Button>
-        {user && <Button variant="outline" onClick={() => setActiveSection('dashboard')} className="gap-2">
-          <TrendingUp className="size-4" />
-          View Dashboard
-        </Button>}
+        {user && (
+          <Button variant="outline" asChild className="gap-2">
+            <Link href="/dashboard">
+              <TrendingUp className="size-4" />
+              View Dashboard
+            </Link>
+          </Button>
+        )}
         <Button
           variant="outline"
           className="gap-2"

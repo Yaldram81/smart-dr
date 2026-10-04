@@ -1,15 +1,13 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useAppStore } from '@/lib/store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { HeartPulse, Stethoscope, Shield } from 'lucide-react'
 
 export function CTASection() {
-  const { setActiveSection } = useAppStore()
-
   return (
     <section className="py-16 md:py-24 relative overflow-hidden">
       {/* Animated gradient bg */}
@@ -33,10 +31,12 @@ export function CTASection() {
                 <Button
                   size="lg"
                   className="bg-primary text-primary-foreground px-8 gap-2"
-                  onClick={() => setActiveSection('checker')}
+                  asChild
                 >
-                  <Stethoscope className="size-5" />
-                  Start Now — It&apos;s Free
+                  <Link href="/checker">
+                    <Stethoscope className="size-5" />
+                    Start Now — It&apos;s Free
+                  </Link>
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1">

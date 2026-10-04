@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
+import { AppShell } from "@/components/layout/app-shell";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,7 +50,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AppShell>
+            {children}
+          </AppShell>
           <Toaster />
         </ThemeProvider>
       </body>

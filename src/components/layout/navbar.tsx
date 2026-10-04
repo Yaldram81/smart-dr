@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
-import { useAppStore, type ActiveSection } from '@/lib/store'
+import { useAppStore } from '@/lib/store'
 import { useHydrated } from '@/components/hooks/use-hydrated'
 import { toast } from '@/hooks/use-toast'
 import { NotificationBell } from '@/components/layout/notification-bell'
@@ -12,7 +14,7 @@ import { RegisterDialog } from '@/components/layout/register-dialog'
 import {
   Heart, Menu, Moon, Sun, LogOut,
   Stethoscope, TrendingUp, HeartPulse, Languages,
-  User, UserCircle
+  UserCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
@@ -29,7 +31,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function Navbar() {
-  const { activeSection, setActiveSection, user, logout } = useAppStore()
+  const { user, logout } = useAppStore()
+  const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const mounted = useHydrated()
   const [loginOpen, setLoginOpen] = useState(false)
@@ -37,17 +41,12 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
 
-  // Dashboard only shown when user is logged in
-  const navItems: { key: ActiveSection; label: string; icon: React.ReactNode }[] = [
-    { key: 'home', label: 'Home', icon: <Heart className="size-4" /> },
-    { key: 'checker', label: 'Symptom Checker', icon: <Stethoscope className="size-4" /> },
-    ...(user ? [{ key: 'dashboard' as ActiveSection, label: 'Dashboard', icon: <TrendingUp className="size-4" /> }] : []),
+  // Multi-page navigation items
+  const navItems = [
+    { href: '/', label: 'Home', icon: <Heart className="size-4" />, active: pathname === '/' },
+    { href: '/checker', label: 'Symptom Checker', icon: <Stethoscope className="size-4" />, active: pathname.startsWith('/checker') || pathname.startsWith('/results') },
+    ...(user ? [{ href: '/dashboard', label: 'Dashboard', icon: <TrendingUp className="size-4" />, active: pathname.startsWith('/dashboard') }] : []),
   ]
-
-  const handleNavClick = (key: ActiveSection) => {
-    setActiveSection(key)
-    setMobileMenuOpen(false)
-  }
 
   const handleLogout = async () => {
     try {
@@ -62,37 +61,38 @@ export function Navbar() {
       // ignore
     }
     toast({ title: 'Logged out', description: 'You have been logged out successfully.' })
-    // Navigate away from dashboard if on it
-    if (activeSection === 'dashboard') {
-      setActiveSection('home')
+    if (pathname === '/dashboard') {
+      router.push('/')
     }
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => handleNavClick('home')}>
-          <div className="flex items-center justify-center size-9 rounded-xl bg-primary text-primary-foreground">
+        {/* Logo with native Next.js Link */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="flex items-center justify-center size-9 rounded-xl bg-primary text-primary-foreground group-hover:scale-105 transition-transform">
             <HeartPulse className="size-5" />
           </div>
           <span className="text-lg font-bold tracking-tight block">
             Smart<span className="text-primary">.Dr</span>
           </span>
-        </div>
+        </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav - Native MPA Links */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => (
             <Button
-              key={item.key}
-              variant={activeSection === item.key ? 'default' : 'ghost'}
+              key={item.href}
+              variant={item.active ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => handleNavClick(item.key)}
+              asChild
               className="gap-2"
             >
-              {item.icon}
-              {item.label}
+              <Link href={item.href}>
+                {item.icon}
+                {item.label}
+              </Link>
             </Button>
           ))}
         </nav>
@@ -161,12 +161,14 @@ export function Navbar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={activeSection === 'checker' ? 'default' : 'ghost'}
+                  variant={pathname.startsWith('/checker') ? 'default' : 'ghost'}
                   size="icon"
                   className="md:hidden size-9"
-                  onClick={() => handleNavClick('checker')}
+                  asChild
                 >
-                  <Stethoscope className="size-4" />
+                  <Link href="/checker">
+                    <Stethoscope className="size-4" />
+                  </Link>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Symptom Checker</TooltipContent>
@@ -193,17 +195,23 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleNavClick('home')} className="cursor-pointer">
-                  <UserCircle className="size-4" />
-                  My Profile
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/" className="flex items-center gap-2">
+                    <UserCircle className="size-4" />
+                    Home
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavClick('dashboard')} className="cursor-pointer">
-                  <TrendingUp className="size-4" />
-                  Dashboard
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    <TrendingUp className="size-4" />
+                    Dashboard
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavClick('checker')} className="cursor-pointer">
-                  <Stethoscope className="size-4" />
-                  Symptom Checker
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/checker" className="flex items-center gap-2">
+                    <Stethoscope className="size-4" />
+                    Symptom Checker
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
@@ -225,13 +233,16 @@ export function Navbar() {
                 <div className="flex flex-col gap-4 mt-8">
                   {navItems.map((item) => (
                     <Button
-                      key={item.key}
-                      variant={activeSection === item.key ? 'default' : 'ghost'}
+                      key={item.href}
+                      variant={item.active ? 'default' : 'ghost'}
                       className="justify-start gap-3"
-                      onClick={() => handleNavClick(item.key)}
+                      asChild
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      {item.icon}
-                      {item.label}
+                      <Link href={item.href}>
+                        {item.icon}
+                        {item.label}
+                      </Link>
                     </Button>
                   ))}
                   <Separator />

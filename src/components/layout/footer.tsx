@@ -1,6 +1,7 @@
 'use client'
 
-import { useAppStore, type ActiveSection } from '@/lib/store'
+import Link from 'next/link'
+import { useAppStore } from '@/lib/store'
 import { DownloadProjectButton } from '@/components/layout/download-project-button'
 import {
   HeartPulse, Github, Twitter, Linkedin, Mail,
@@ -11,18 +12,18 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
 export function Footer() {
-  const { setActiveSection, privacyMode, user } = useAppStore()
+  const { privacyMode, user } = useAppStore()
 
-  const quickLinks: { label: string; section: ActiveSection; icon: React.ReactNode }[] = [
-    { label: 'Home', section: 'home', icon: <HeartPulse className="size-3.5" /> },
-    { label: 'Symptom Checker', section: 'checker', icon: <Stethoscope className="size-3.5" /> },
-    ...(user ? [{ label: 'Dashboard', section: 'dashboard' as ActiveSection, icon: <BarChart3 className="size-3.5" /> }] : []),
+  const quickLinks = [
+    { label: 'Home', href: '/', icon: <HeartPulse className="size-3.5" /> },
+    { label: 'Symptom Checker', href: '/checker', icon: <Stethoscope className="size-3.5" /> },
+    ...(user ? [{ label: 'Dashboard', href: '/dashboard', icon: <BarChart3 className="size-3.5" /> }] : []),
   ]
 
   const resourceLinks = [
-    { label: 'AI Health Chat', icon: <MessageSquare className="size-3.5" /> },
-    { label: 'Health Tips', icon: <Zap className="size-3.5" /> },
-    { label: 'FAQ', icon: <ChevronRight className="size-3.5" /> },
+    { label: 'AI Health Chat', href: '#', icon: <MessageSquare className="size-3.5" /> },
+    { label: 'Health Tips', href: '#', icon: <Zap className="size-3.5" /> },
+    { label: 'FAQ', href: '#', icon: <ChevronRight className="size-3.5" /> },
   ]
 
   const socialLinks = [
@@ -77,15 +78,15 @@ export function Footer() {
             </h4>
             <div className="space-y-2.5">
               {quickLinks.map((link) => (
-                <button
+                <Link
                   key={link.label}
+                  href={link.href}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2 group"
-                  onClick={() => { setActiveSection(link.section); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 >
                   <span className="opacity-50 group-hover:opacity-100 transition-opacity">{link.icon}</span>
                   <span>{link.label}</span>
                   <ChevronRight className="size-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -98,14 +99,13 @@ export function Footer() {
             </h4>
             <div className="space-y-2.5">
               {resourceLinks.map((link) => (
-                <button
+                <span
                   key={link.label}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2 group"
-                  onClick={() => { setActiveSection('home'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 >
                   <span className="opacity-50 group-hover:opacity-100 transition-opacity">{link.icon}</span>
                   <span>{link.label}</span>
-                </button>
+                </span>
               ))}
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { getDisplayName, URDU_SYMPTOMS, URDU_DISEASES, URDU_CATEGORIES, URDU_SEVERITY, URDU_UI } from '@/lib/urdu-translations'
@@ -78,7 +79,8 @@ export function DiseaseBrowserSection() {
   const [selectedDisease, setSelectedDisease] = useState<typeof DISEASE_DATA[0] | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
-  const { setActiveSection, language } = useAppStore()
+  const router = useRouter()
+  const { language } = useAppStore()
 
   const categories = useMemo(() => {
     const cats: Record<string, typeof DISEASE_DATA> = {}
@@ -342,7 +344,7 @@ export function DiseaseBrowserSection() {
               <DialogFooter>
                 <Button
                   className="bg-primary text-primary-foreground gap-2"
-                  onClick={() => { setSelectedDisease(null); setActiveSection('checker') }}
+                  onClick={() => { setSelectedDisease(null); router.push('/checker') }}
                 >
                   <Stethoscope className="size-4" />
                   Check Symptoms

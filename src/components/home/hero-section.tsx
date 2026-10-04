@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export function HeroSection() {
-  const { setActiveSection, user } = useAppStore()
+  const { user } = useAppStore()
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
 
@@ -119,21 +120,25 @@ export function HeroSection() {
             <Button
               size="lg"
               className="bg-primary text-primary-foreground px-8 text-base gap-2 shadow-lg hover:shadow-xl transition-all animate-[pulse-glow_3s_ease-in-out_infinite] group"
-              onClick={() => setActiveSection('checker')}
+              asChild
             >
-              <Stethoscope className="size-5 animate-[breathe_3s_ease-in-out_infinite]" />
-              Start Symptom Check
-              <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform animate-[bounce-subtle_2s_ease-in-out_infinite]" />
+              <Link href="/checker">
+                <Stethoscope className="size-5 animate-[breathe_3s_ease-in-out_infinite]" />
+                Start Symptom Check
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform animate-[bounce-subtle_2s_ease-in-out_infinite]" />
+              </Link>
             </Button>
             {user ? (
               <Button
                 size="lg"
                 variant="outline"
                 className="px-8 text-base gap-2"
-                onClick={() => setActiveSection('dashboard')}
+                asChild
               >
-                <TrendingUp className="size-5" />
-                View Dashboard
+                <Link href="/dashboard">
+                  <TrendingUp className="size-5" />
+                  View Dashboard
+                </Link>
               </Button>
             ) : null}
           </motion.div>

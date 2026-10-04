@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { getDisplayName, URDU_SYMPTOMS, URDU_CATEGORIES } from '@/lib/urdu-translations'
@@ -39,9 +40,10 @@ const SymptomBodyMap3D = dynamic(
 )
 
 function SymptomCheckerTab() {
+  const router = useRouter()
   const {
     symptoms, setSymptoms, selectedSymptomIds, toggleSymptom, clearSelectedSymptoms,
-    isPredicting, setIsPredicting, setPredictions, setLlmAnalysis, setActiveSection,
+    isPredicting, setIsPredicting, setPredictions, setLlmAnalysis,
     user, symptomSearch, setSymptomSearch, isLoadingSymptoms, setIsLoadingSymptoms,
     predictionEngine, setPredictionEngine, language, privacyMode, setPrivacyMode,
   } = useAppStore()
@@ -206,7 +208,7 @@ function SymptomCheckerTab() {
       if (data.predictions.length === 0) {
         toast({ title: 'No matches found', description: 'Try selecting more or different symptoms.' })
       } else {
-        setActiveSection('results')
+        router.push('/results')
       }
     } catch {
       toast({ title: 'Error', description: 'Failed to get predictions', variant: 'destructive' })
