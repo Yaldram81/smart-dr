@@ -8,12 +8,11 @@ import { useAppStore } from '@/lib/store'
 import { useHydrated } from '@/components/hooks/use-hydrated'
 import { toast } from '@/hooks/use-toast'
 import { NotificationBell } from '@/components/layout/notification-bell'
-import { LanguageToggle } from '@/components/layout/language-toggle'
 import { LoginDialog } from '@/components/layout/login-dialog'
 import { RegisterDialog } from '@/components/layout/register-dialog'
 import {
   Heart, Menu, Moon, Sun, LogOut,
-  Stethoscope, TrendingUp, HeartPulse, Languages,
+  Stethoscope, TrendingUp, HeartPulse,
   UserCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,9 +21,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  Popover, PopoverContent, PopoverTrigger
-} from '@/components/ui/popover'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
@@ -39,7 +35,6 @@ export function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
 
   // Multi-page navigation items
   const navItems = [
@@ -111,17 +106,6 @@ export function Navbar() {
             </Button>
           )}
 
-          {/* Language Toggle with Globe Icon */}
-          <Popover open={langOpen} onOpenChange={setLangOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-9">
-                <Languages className="size-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2" align="end">
-              <LanguageToggle />
-            </PopoverContent>
-          </Popover>
 
           {/* Notification Bell - visible on all screen sizes */}
           <NotificationBell />
@@ -245,10 +229,7 @@ export function Navbar() {
                       </Link>
                     </Button>
                   ))}
-                  <Separator />
-                  <div className="px-4">
-                    <LanguageToggle />
-                  </div>
+
                   <Separator />
                   <div className="flex flex-col gap-2 px-4">
                     <Dialog open={loginOpen} onOpenChange={setLoginOpen}>

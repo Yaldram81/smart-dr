@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
-import { getDisplayName, URDU_SYMPTOMS, URDU_CATEGORIES } from '@/lib/urdu-translations'
+import { getDisplayName, URDU_SYMPTOMS, URDU_CATEGORIES, getSymptomDescription } from '@/lib/urdu-translations'
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -19,8 +20,9 @@ import {
   Stethoscope, Brain, ClipboardList, Zap, Loader2,
   Thermometer, Wind, Droplets, HeartPulse, Shield,
   AlertTriangle, Search, CheckCircle2, X, Sparkles,
-  LayoutGrid, List, Layers, SlidersHorizontal, Trash2,
-  RotateCcw, Info, ArrowRight, ShieldCheck, Flame, Bone, Eye
+  Layers, Trash2, ChevronDown, ChevronRight, ChevronsUpDown,
+  RotateCcw, Info, ArrowRight, ShieldCheck, Flame, Bone, Eye,
+  Languages
 } from 'lucide-react'
 
 import { VoiceInputButton } from '@/components/symptom-checker/voice-input-button'
@@ -41,7 +43,6 @@ const SymptomBodyMap3D = dynamic(
   }
 )
 
-type ViewMode = 'grid' | 'compact' | 'categories'
 
 export default function SymptomCheckerTab() {
   const router = useRouter()
@@ -49,7 +50,7 @@ export default function SymptomCheckerTab() {
     symptoms, setSymptoms, selectedSymptomIds, toggleSymptom, clearSelectedSymptoms,
     isPredicting, setIsPredicting, setPredictions, setLlmAnalysis,
     user, symptomSearch, setSymptomSearch, isLoadingSymptoms, setIsLoadingSymptoms,
-    predictionEngine, setPredictionEngine, language, privacyMode, setPrivacyMode,
+    predictionEngine, setPredictionEngine, language, setLanguage, privacyMode, setPrivacyMode,
   } = useAppStore()
 
   // Layout & Filtering States
@@ -59,8 +60,17 @@ export default function SymptomCheckerTab() {
   const [selected3DCategories, setSelected3DCategories] = useState<string[] | null>(null)
   const [selected3DLabel, setSelected3DLabel] = useState<string | null>(null)
   const [bodyMapMode, setBodyMapMode] = useState<'3d' | '2d'>('3d')
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [showAnatomySidebar, setShowAnatomySidebar] = useState<boolean>(true)
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
+
+  const toggleCategory = (cat: string) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [cat]: prev[cat] === undefined ? false : !prev[cat]
+    }))
+  }
+
+  const isCategoryOpen = (cat: string) => openCategories[cat] !== false
+  const [showAnatomySidebar, setShowAnatomySidebar] = useState<boolean>(false)
 
   // Fetch all clinical symptoms on mount
   useEffect(() => {
@@ -353,38 +363,26 @@ export default function SymptomCheckerTab() {
                 <span className="sm:hidden">Anatomy</span>
               </Button>
 
-              {/* View Mode Switcher */}
-              <div className="flex items-center rounded-lg border bg-muted/50 p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  title="Grid View"
-                  className={`p-1.5 rounded-md text-xs transition-all ${
-                    viewMode === 'grid' ? 'bg-background shadow-xs text-primary' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <LayoutGrid className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('compact')}
-                  title="Compact Badges"
-                  className={`p-1.5 rounded-md text-xs transition-all ${
-                    viewMode === 'compact' ? 'bg-background shadow-xs text-primary' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <SlidersHorizontal className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('categories')}
-                  title="Category Sections"
-                  className={`p-1.5 rounded-md text-xs transition-all ${
-                    viewMode === 'categories' ? 'bg-background shadow-xs text-primary' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <List className="size-4" />
-                </button>
+              {/* Language Selector */}
+              <div className="flex items-center rounded-lg border bg-muted/40 p-0.5 gap-0.5">
+                <div className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground font-medium">
+                  <Languages className="size-3.5 text-primary" />
+                  <span className="hidden sm:inline">Language:</span>
+                </div>
+                {(['en', 'ur', 'both'] as const).map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => setLanguage(l)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      language === l
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
+                    } ${l === 'ur' ? 'font-urdu' : ''}`}
+                  >
+                    {l === 'en' ? 'English' : l === 'ur' ? 'اردو' : 'Both'}
+                  </button>
+                ))}
               </div>
 
               {/* Clear All */}
@@ -411,11 +409,11 @@ export default function SymptomCheckerTab() {
         </div>
 
         {/* 2. Three-Column Clinical Grid Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* ======================================================== */}
           {/* COLUMN 1: LEFT SIDEBAR (ANATOMY & CATEGORIES)            */}
           {/* ======================================================== */}
-          <div className={`${showAnatomySidebar ? 'lg:col-span-3' : 'hidden'} space-y-5 transition-all`}>
+          <div className={`${showAnatomySidebar ? 'lg:col-span-3' : 'hidden'} self-start lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar space-y-5 transition-all`}>
             {/* Card A: Anatomy Explorer (3D / 2D) */}
             <Card className="border-border/60 shadow-sm overflow-hidden bg-card">
               <CardHeader className="p-3.5 pb-2 border-b bg-muted/30">
@@ -654,7 +652,7 @@ export default function SymptomCheckerTab() {
             {/* Symptoms Counter & Quick Category Pills */}
             <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
               <span>
-                Displaying <strong>{visibleSymptoms.length}</strong> available symptoms
+                Displaying <strong>{visibleSymptoms.length}</strong> symptoms categorized into <strong>{Object.keys(filteredCategories).length}</strong> clinical groups
               </span>
               {selectedCategoryFilter !== 'all' && (
                 <Button
@@ -668,171 +666,219 @@ export default function SymptomCheckerTab() {
               )}
             </div>
 
-            {/* ============================================== */}
-            {/* VIEW MODE 1: GRID VIEW (Medical Cards)         */}
-            {/* ============================================== */}
-            {viewMode === 'grid' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                {visibleSymptoms.map((sym) => {
-                  const isSelected = selectedSymptomIds.includes(sym.id)
-                  const Icon = CATEGORY_ICONS[sym.category] || <ClipboardList className="size-4" />
-                  const urduName = URDU_SYMPTOMS[sym.name]
+            {/* ======================================================= */}
+            {/* SINGLE VIEW: EXPANDABLE & COLLAPSIBLE CATEGORIES VIEW   */}
+            {/* ======================================================= */}
+            <div className="space-y-3.5">
+              {Object.entries(filteredCategories).map(([category, syms]) => {
+                const selectedInCat = selectedCountByCategory[category] || 0
+                const Icon = CATEGORY_ICONS[category] || <ClipboardList className="size-4" />
+                const isOpen = isCategoryOpen(category)
+                const urduCategory = URDU_CATEGORIES[category]
 
-                  return (
+                return (
+                  <Card
+                    key={category}
+                    className={`border transition-all duration-200 overflow-hidden ${
+                      selectedInCat > 0
+                        ? 'border-primary/40 bg-card shadow-xs'
+                        : 'border-border/70 bg-card/60'
+                    }`}
+                  >
+                    {/* Collapsible Header */}
                     <div
-                      key={sym.id}
-                      onClick={() => toggleSymptom(sym.id)}
-                      className={`relative p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between group ${
-                        isSelected
-                          ? 'bg-primary/10 border-primary ring-2 ring-primary/20 shadow-sm'
-                          : 'bg-card border-border/60 hover:border-primary/40 hover:bg-muted/30 hover:shadow-xs'
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleCategory(category)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleCategory(category)
+                        }
+                      }}
+                      className="p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none hover:bg-muted/40 transition-colors"
                     >
-                      <div>
-                        {/* Header: Category Icon & Checkbox */}
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`p-1.5 rounded-lg text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:text-primary'}`}>
-                            {Icon}
-                          </span>
-                          <div className={`size-5 rounded-md flex items-center justify-center border transition-all ${
-                            isSelected
-                              ? 'bg-primary border-primary text-primary-foreground'
-                              : 'border-muted-foreground/30 bg-background group-hover:border-primary'
-                          }`}>
-                            {isSelected && <CheckCircle2 className="size-3.5" />}
-                          </div>
-                        </div>
-
-                        {/* English Symptom Name */}
-                        <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                          {sym.name}
-                        </h4>
-
-                        {/* Urdu Translated Name in Nastaleeq */}
-                        {urduName && (
-                          <p className="text-xs text-muted-foreground font-urdu mt-0.5 opacity-80" dir="rtl">
-                            {urduName}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Footer: Category Badge */}
-                      <div className="mt-3 pt-2 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span className="truncate max-w-[120px]">{sym.category}</span>
-                        {isSelected && (
-                          <span className="font-semibold text-primary">Selected</span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* ============================================== */}
-            {/* VIEW MODE 2: COMPACT CHIPS VIEW               */}
-            {/* ============================================== */}
-            {viewMode === 'compact' && (
-              <Card className="p-4 border-border/60 bg-card">
-                <div className="flex flex-wrap gap-2">
-                  {visibleSymptoms.map((sym) => {
-                    const isSelected = selectedSymptomIds.includes(sym.id)
-                    const urduName = URDU_SYMPTOMS[sym.name]
-
-                    return (
-                      <Badge
-                        key={sym.id}
-                        variant={isSelected ? 'default' : 'outline'}
-                        onClick={() => toggleSymptom(sym.id)}
-                        className={`cursor-pointer transition-all py-2 px-3 text-xs gap-1.5 ${
-                          isSelected
-                            ? 'bg-primary text-primary-foreground shadow-xs'
-                            : 'hover:bg-primary/10 hover:border-primary/40'
-                        }`}
-                      >
-                        {isSelected && <CheckCircle2 className="size-3" />}
-                        <span>{sym.name}</span>
-                        {urduName && (
-                          <span className="opacity-70 font-urdu text-[11px] ml-1">({urduName})</span>
-                        )}
-                      </Badge>
-                    )
-                  })}
-                </div>
-              </Card>
-            )}
-
-            {/* ============================================== */}
-            {/* VIEW MODE 3: CATEGORIZED SECTIONS VIEW         */}
-            {/* ============================================== */}
-            {viewMode === 'categories' && (
-              <div className="space-y-4">
-                {Object.entries(filteredCategories).map(([category, syms]) => {
-                  const selectedInCat = selectedCountByCategory[category] || 0
-                  const Icon = CATEGORY_ICONS[category] || <ClipboardList className="size-4" />
-
-                  return (
-                    <Card key={category} className="border-border/60 bg-card overflow-hidden shadow-xs">
-                      {/* Category Header with Bulk Select */}
-                      <CardHeader className="p-3.5 pb-3 border-b bg-muted/30 flex flex-row items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-primary">{Icon}</span>
-                          <CardTitle className="text-sm font-bold uppercase tracking-wide">
-                            {getDisplayName(category, URDU_CATEGORIES[category] || category, language)}
-                          </CardTitle>
-                          <Badge variant="secondary" className="text-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`p-1.5 rounded-lg shrink-0 ${
+                          selectedInCat > 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-primary'
+                        }`}>
+                          {Icon}
+                        </span>
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <h3 className="text-sm font-bold text-foreground tracking-tight">
+                            {category}
+                          </h3>
+                          {urduCategory && (
+                            <span className="text-xs text-muted-foreground font-urdu" dir="rtl">
+                              ({urduCategory})
+                            </span>
+                          )}
+                          <Badge variant="secondary" className="text-[11px] h-5 px-2 font-normal">
                             {syms.length}
                           </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {selectedInCat < syms.length ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSelectAllInCategory(syms)}
-                              className="text-[11px] h-7 text-primary hover:bg-primary/10"
-                            >
-                              Select All
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeselectAllInCategory(syms)}
-                              className="text-[11px] h-7 text-destructive hover:bg-destructive/10"
-                            >
-                              Deselect
-                            </Button>
+                          {selectedInCat > 0 && (
+                            <Badge className="text-[11px] h-5 px-2 bg-primary/15 text-primary border-primary/30 font-medium">
+                              {selectedInCat} selected
+                            </Badge>
                           )}
                         </div>
-                      </CardHeader>
-                      <CardContent className="p-3">
-                        <div className="flex flex-wrap gap-2">
-                          {syms.map((sym) => {
-                            const isSelected = selectedSymptomIds.includes(sym.id)
-                            return (
-                              <Badge
-                                key={sym.id}
-                                variant={isSelected ? 'default' : 'outline'}
-                                onClick={() => toggleSymptom(sym.id)}
-                                className={`cursor-pointer transition-all py-1.5 px-3 text-xs gap-1.5 ${
-                                  isSelected
-                                    ? 'bg-primary text-primary-foreground shadow-xs'
-                                    : 'hover:bg-primary/10 hover:border-primary/40'
-                                }`}
-                              >
-                                {isSelected && <CheckCircle2 className="size-3" />}
-                                <span>{sym.name}</span>
-                              </Badge>
-                            )
-                          })}
+                      </div>
+
+                      {/* Header Actions: Bulk Select + Chevron */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {selectedInCat < syms.length ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSelectAllInCategory(syms)
+                            }}
+                            className="text-[11px] h-7 px-2 text-primary hover:bg-primary/10 hover:text-primary"
+                          >
+                            Select All
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeselectAllInCategory(syms)
+                            }}
+                            className="text-[11px] h-7 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            Deselect All
+                          </Button>
+                        )}
+                        <div className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+                          <ChevronDown
+                            className={`size-4 transition-transform duration-200 ${
+                              isOpen ? 'rotate-180' : ''
+                            }`}
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
+                      </div>
+                    </div>
+
+                    {/* Expandable Symptoms Grid */}
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key={`content-${category}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden border-t border-border/40"
+                        >
+                          <div className="p-3 sm:p-3.5 bg-muted/10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+                            {syms.map((sym) => {
+                              const isSelected = selectedSymptomIds.includes(sym.id)
+                              const urduName = URDU_SYMPTOMS[sym.name]
+                              const desc = getSymptomDescription(sym.name, category, sym.description)
+
+                              return (
+                                <HoverCard key={sym.id} openDelay={150} closeDelay={150}>
+                                  <HoverCardTrigger asChild>
+                                    <div
+                                      onClick={() => toggleSymptom(sym.id)}
+                                      className={`relative p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between group ${
+                                        isSelected
+                                          ? 'bg-primary/10 border-primary ring-1 ring-primary/30 shadow-xs'
+                                          : 'bg-card border-border/60 hover:border-primary/40 hover:bg-muted/30 hover:shadow-xs'
+                                      }`}
+                                    >
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0 flex-1">
+                                          <h4 className={`text-xs font-semibold leading-snug transition-colors ${
+                                            isSelected ? 'text-primary font-bold' : 'text-foreground group-hover:text-primary'
+                                          }`}>
+                                            {language === 'ur' ? (urduName || sym.name) : sym.name}
+                                          </h4>
+                                          {(language === 'both' || (language === 'en' && urduName)) && (
+                                            <p className="text-[11px] text-muted-foreground font-urdu mt-0.5 opacity-80" dir="rtl">
+                                              {urduName}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className={`size-4.5 rounded-md shrink-0 flex items-center justify-center border transition-all ${
+                                          isSelected
+                                            ? 'bg-primary border-primary text-primary-foreground'
+                                            : 'border-muted-foreground/30 bg-background group-hover:border-primary'
+                                        }`}>
+                                          {isSelected && <CheckCircle2 className="size-3" />}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </HoverCardTrigger>
+                                  <HoverCardContent
+                                    side="top"
+                                    align="center"
+                                    sideOffset={6}
+                                    className="w-72 sm:w-80 p-3.5 z-50 shadow-xl bg-popover/95 backdrop-blur-md border border-border/80 rounded-xl space-y-2 pointer-events-auto text-left"
+                                  >
+                                    <div className="flex items-center justify-between text-[11px]">
+                                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                                        <span className="text-primary">{Icon}</span>
+                                        <span className="font-semibold">{category}</span>
+                                      </div>
+                                      {isSelected ? (
+                                        <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] h-4.5 px-1.5 font-semibold">
+                                          Selected
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-[10px] text-muted-foreground">Click to add</span>
+                                      )}
+                                    </div>
+
+                                    <div>
+                                      <h4 className="text-xs font-bold text-foreground">
+                                        {language === 'ur' ? (urduName || sym.name) : sym.name}
+                                      </h4>
+                                      {language === 'both' && urduName && (
+                                        <p className="text-[11px] text-primary font-urdu mt-0.5" dir="rtl">
+                                          {urduName}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    <div className="pt-2 border-t border-border/40 text-xs">
+                                      {language === 'en' && (
+                                        <p className="text-muted-foreground leading-relaxed text-[11px]">
+                                          {desc.en}
+                                        </p>
+                                      )}
+                                      {language === 'ur' && (
+                                        <p className="text-muted-foreground font-urdu leading-relaxed text-xs opacity-95" dir="rtl">
+                                          {desc.ur}
+                                        </p>
+                                      )}
+                                      {language === 'both' && (
+                                        <div className="space-y-1.5">
+                                          <p className="text-muted-foreground leading-relaxed text-[11px]">
+                                            {desc.en}
+                                          </p>
+                                          <p className="text-muted-foreground font-urdu leading-relaxed text-xs opacity-90 pt-1.5 border-t border-border/30" dir="rtl">
+                                            {desc.ur}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </HoverCardContent>
+                                </HoverCard>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Card>
+                )
+              })}
+            </div>
 
             {/* Zero State if no symptoms match */}
             {visibleSymptoms.length === 0 && (
@@ -862,7 +908,7 @@ export default function SymptomCheckerTab() {
           {/* ======================================================== */}
           {/* COLUMN 3: RIGHT SIDEBAR (CONSULTATION TRAY & CONTROLS)    */}
           {/* ======================================================== */}
-          <div className={`${showAnatomySidebar ? 'lg:col-span-4 xl:col-span-4' : 'lg:col-span-5 xl:col-span-5'} space-y-4 lg:sticky lg:top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar pr-1 pb-6`}>
+          <div className={`${showAnatomySidebar ? 'lg:col-span-4 xl:col-span-4' : 'lg:col-span-5 xl:col-span-5'} self-start lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-6`}>
             <Card className="border-border/80 shadow-md bg-card overflow-hidden">
               {/* Card Header: Tray Summary */}
               <CardHeader className="p-4 pb-3 border-b bg-muted/40">
