@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button'
 import {
   ClipboardList, Brain, Thermometer, Wind, Eye, Bone, Droplets,
   Sparkles, HeartPulse, UserCheck, AlertTriangle, CheckCircle2,
-  Shield, Pill, Syringe, Apple, Stethoscope, Search, X
+  Shield, Pill, Syringe, Apple, Stethoscope, Search, X,
+  ChevronDown, ChevronRight, Languages
 } from 'lucide-react'
 import type { DiseaseDataItem } from '@/components/types'
 
@@ -79,8 +80,9 @@ export function DiseaseBrowserSection() {
   const [selectedDisease, setSelectedDisease] = useState<typeof DISEASE_DATA[0] | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
   const router = useRouter()
-  const { language } = useAppStore()
+  const { language, setLanguage } = useAppStore()
 
   const categories = useMemo(() => {
     const cats: Record<string, typeof DISEASE_DATA> = {}
@@ -102,7 +104,9 @@ export function DiseaseBrowserSection() {
 
       const matchingDiseases = diseases.filter((d) => {
         if (!query) return true
-        return d.name.toLowerCase().includes(query)
+        const eng = d.name.toLowerCase()
+        const urd = (URDU_DISEASES[d.name] || '').toLowerCase()
+        return eng.includes(query) || urd.includes(query)
       })
 
       if (matchingDiseases.length > 0) {
@@ -118,6 +122,31 @@ export function DiseaseBrowserSection() {
     [filteredCategories]
   )
 
+  const toggleCategory = (cat: string) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [cat]: prev[cat] === undefined ? false : !prev[cat]
+    }))
+  }
+
+  const expandAll = () => {
+    const all: Record<string, boolean> = {}
+    for (const cat of Object.keys(filteredCategories)) {
+      all[cat] = true
+    }
+    setOpenCategories(all)
+  }
+
+  const collapseAll = () => {
+    const none: Record<string, boolean> = {}
+    for (const cat of Object.keys(filteredCategories)) {
+      none[cat] = false
+    }
+    setOpenCategories(none)
+  }
+
+  const isCategoryOpen = (cat: string) => openCategories[cat] !== false
+
   const severityColor: Record<string, string> = {
     mild: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
     moderate: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800',
@@ -125,21 +154,33 @@ export function DiseaseBrowserSection() {
   }
 
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden">
+    <section className="py-12 md:py-20 relative overflow-hidden">
       {/* Subtle gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.015] to-transparent pointer-events-none" />
       <div className="container mx-auto px-4 md:px-6 relative">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <Badge variant="outline" className="mb-4">Disease Database</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">Browse Diseases</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              Explore our comprehensive database of 42+ diseases grouped by category. Click any disease for details.
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Badge variant="outline" className="border-primary/30 text-primary">Disease Database</Badge>
+              {/* Language Switcher Button at Top */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLanguage(language === 'en' ? 'ur' : 'en')}
+                className="gap-1.5 h-8 px-3 rounded-full text-xs font-semibold border-primary/30 hover:border-primary bg-background shadow-xs hover:bg-primary/5 transition-all cursor-pointer"
+              >
+                <Languages className="size-3.5 text-primary" />
+                <span>{language === 'en' ? 'اردو زبان (Switch to Urdu)' : 'English Version'}</span>
+              </Button>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold">Browse Clinical Diseases</h2>
+            <p className="text-muted-foreground mt-2 max-w-xl mx-auto text-xs md:text-sm">
+              Explore 42+ clinical conditions classified by category. Expand or collapse specialties and click any condition for clinical guidance.
             </p>
           </motion.div>
         </div>
@@ -150,17 +191,17 @@ export function DiseaseBrowserSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             viewport={{ once: true }}
-            className="mb-8 space-y-4"
+            className="mb-6 space-y-4"
           >
             {/* Search Input */}
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search diseases..."
+                placeholder={language === 'ur' ? 'بیماری تلاش کریں...' : 'Search diseases by English or Urdu name...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-9 h-10"
+                className="pl-9 pr-9 h-10 rounded-xl"
               />
               {searchQuery && (
                 <button
@@ -174,7 +215,7 @@ export function DiseaseBrowserSection() {
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap gap-1.5 justify-center">
               {categoryNames.map((cat) => {
                 const isActive = selectedCategory === cat
                 const catIcon = cat === 'All' ? null : CATEGORY_ICONS[cat]
@@ -182,36 +223,55 @@ export function DiseaseBrowserSection() {
                   <Badge
                     key={cat}
                     variant={isActive ? 'default' : 'outline'}
-                    className={`cursor-pointer transition-all hover:scale-105 py-1.5 px-3 text-xs ${
+                    className={`cursor-pointer transition-all py-1 px-2.5 text-xs ${
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-md'
+                        ? 'bg-primary text-primary-foreground shadow-xs'
                         : 'hover:bg-primary/10'
                     }`}
                     onClick={() => setSelectedCategory(cat)}
                   >
                     {catIcon}
-                    {cat}
+                    <span className="ml-1">{cat === 'All' ? 'All' : getDisplayName(cat, URDU_CATEGORIES[cat] || cat, language)}</span>
                   </Badge>
                 )
               })}
             </div>
 
-            {/* Results count */}
-            {(searchQuery || selectedCategory !== 'All') && (
-              <p className="text-center text-sm text-muted-foreground">
-                Showing {totalFiltered} of {DISEASE_DATA.length} diseases
-                {searchQuery && <span> matching &ldquo;{searchQuery}&rdquo;</span>}
-                {selectedCategory !== 'All' && <span> in {selectedCategory}</span>}
-              </p>
-            )}
+            {/* Expand / Collapse All & Count Controls */}
+            <div className="flex items-center justify-between pt-2 px-1 text-xs text-muted-foreground border-t border-border/40">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={expandAll}
+                  className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronDown className="size-3.5" />
+                  <span>Expand All</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={collapseAll}
+                  className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronRight className="size-3.5" />
+                  <span>Collapse All</span>
+                </Button>
+              </div>
+
+              <span>
+                Showing <strong>{totalFiltered}</strong> of {DISEASE_DATA.length} conditions
+              </span>
+            </div>
           </motion.div>
 
-          {/* Disease List */}
+          {/* Disease List Classified by Expandable Categories */}
           {totalFiltered === 0 ? (
             <div className="text-center py-12">
               <Search className="size-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground text-lg font-medium">No diseases found</p>
-              <p className="text-muted-foreground/70 text-sm mt-1">Try adjusting your search or filter</p>
+              <p className="text-muted-foreground text-base font-medium">No diseases found</p>
+              <p className="text-muted-foreground/70 text-xs mt-1">Try adjusting your search or category filter</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -222,34 +282,83 @@ export function DiseaseBrowserSection() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-8">
-              {Object.entries(filteredCategories).map(([category, diseases], ci) => (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: ci * 0.05 }}
-                  viewport={{ once: true }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    {CATEGORY_ICONS[category] || <ClipboardList className="size-4" />}
-                    <h3 className="font-semibold text-sm uppercase tracking-wide">{getDisplayName(category, URDU_CATEGORIES[category] || category, language)}</h3>
-                    <Badge variant="secondary" className="text-xs">{diseases.length}</Badge>
+            <div className="space-y-4">
+              {Object.entries(filteredCategories).map(([category, diseases]) => {
+                const isOpen = isCategoryOpen(category)
+
+                return (
+                  <div
+                    key={category}
+                    className="border border-border/60 rounded-xl bg-card overflow-hidden shadow-2xs transition-all"
+                  >
+                    {/* Expandable Category Header */}
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(category)}
+                      className="w-full flex items-center justify-between p-3.5 bg-muted/20 hover:bg-muted/40 transition-colors text-left cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-primary">{CATEGORY_ICONS[category] || <ClipboardList className="size-4" />}</span>
+                        <h3 className="font-bold text-sm uppercase tracking-wide text-foreground">
+                          {getDisplayName(category, URDU_CATEGORIES[category] || category, language)}
+                        </h3>
+                        <Badge variant="secondary" className="text-[11px] h-5 px-1.5 font-medium">
+                          {diseases.length}
+                        </Badge>
+                      </div>
+                      <ChevronDown
+                        className={`size-4 text-muted-foreground transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
+                      />
+                    </button>
+
+                    {/* Small, Compact Disease Cards Grid */}
+                    {isOpen && (
+                      <div className="p-3 bg-card border-t border-border/40">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                          {diseases.map((disease) => {
+                            const urduName = URDU_DISEASES[disease.name]
+
+                            return (
+                              <div
+                                key={disease.name}
+                                onClick={() => setSelectedDisease(disease)}
+                                className="p-2.5 rounded-lg border bg-background hover:bg-muted/40 hover:border-primary/50 hover:shadow-2xs transition-all cursor-pointer flex flex-col justify-between gap-1.5 group text-left"
+                              >
+                                <div className="flex items-start justify-between gap-1.5">
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors truncate">
+                                      {disease.name}
+                                    </h4>
+                                    {urduName && (
+                                      <p className="text-[11px] text-muted-foreground font-urdu leading-tight truncate" dir="rtl">
+                                        {urduName}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <span
+                                    className={`size-2 rounded-full shrink-0 mt-1 ${
+                                      disease.severity === 'severe'
+                                        ? 'bg-red-500 ring-2 ring-red-500/20'
+                                        : disease.severity === 'moderate'
+                                        ? 'bg-amber-500 ring-2 ring-amber-500/20'
+                                        : 'bg-emerald-500 ring-2 ring-emerald-500/20'
+                                    }`}
+                                    title={`Severity: ${disease.severity}`}
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30">
+                                  <span className="truncate max-w-[85px]">{disease.specialist}</span>
+                                  <span className="capitalize text-[9px] font-medium opacity-75">{disease.severity}</span>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {diseases.map((disease) => (
-                      <Badge
-                        key={disease.name}
-                        variant="outline"
-                        className={`cursor-pointer hover:scale-105 transition-all py-1 px-2.5 text-xs border ${severityColor[disease.severity]}`}
-                        onClick={() => setSelectedDisease(disease)}
-                      >
-                        {getDisplayName(disease.name, URDU_DISEASES[disease.name] || disease.name, language)}
-                      </Badge>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

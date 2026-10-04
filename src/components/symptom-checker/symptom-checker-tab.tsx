@@ -583,7 +583,7 @@ export default function SymptomCheckerTab() {
           {/* ======================================================== */}
           {/* COLUMN 2: CENTER WORKBENCH (SEARCH, PRESETS & SYMPTOMS)  */}
           {/* ======================================================== */}
-          <div className={`${showAnatomySidebar ? 'lg:col-span-6' : 'lg:col-span-9'} space-y-5 min-w-0`}>
+          <div className={`${showAnatomySidebar ? 'lg:col-span-5 xl:col-span-5' : 'lg:col-span-7 xl:col-span-7'} space-y-5 min-w-0`}>
             {/* Search Bar & Voice Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -862,7 +862,7 @@ export default function SymptomCheckerTab() {
           {/* ======================================================== */}
           {/* COLUMN 3: RIGHT SIDEBAR (CONSULTATION TRAY & CONTROLS)    */}
           {/* ======================================================== */}
-          <div className="lg:col-span-3 space-y-5 lg:sticky lg:top-24">
+          <div className={`${showAnatomySidebar ? 'lg:col-span-4 xl:col-span-4' : 'lg:col-span-5 xl:col-span-5'} space-y-4 lg:sticky lg:top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar pr-1 pb-6`}>
             <Card className="border-border/80 shadow-md bg-card overflow-hidden">
               {/* Card Header: Tray Summary */}
               <CardHeader className="p-4 pb-3 border-b bg-muted/40">
