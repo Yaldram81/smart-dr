@@ -58,10 +58,11 @@ The system evaluates user-reported symptoms across 187+ clinical manifestations,
 - **Dual-Engine Prediction**:
   - **Local ML / Dataset Engine**: Real-time weighted symptom matching across 42+ diseases and 187+ symptoms, with optional Support Vector Classifier (SVC) integration.
   - **Online AI Engine (Google Gemini 2.5 Flash)**: Generative clinical analysis delivering 6-dimensional structured outputs (Disease, Description, Precautions, Medications, Diet, Workout).
-- **Interactive Body Map**: Anatomical human body selector allowing point-and-click targeting of Head/Neck, Chest/Heart, Abdomen, Upper Limbs, Lower Limbs, and General/Skin.
-- **Voice-Assisted Symptom Logging**: Hands-free voice recognition powered by the Web Speech API with real-time symptom query matching.
+- **3D & 2D Interactive Human Anatomy Model**: Real-time 3D WebGL anatomical mannequin built with Three.js featuring 360° orbit rotation, cardiac pulsation, pulmonary breathing kinetics, layer toggles (Organs, Skeletal, Skin), and raycast selection mapping directly to symptom categories. Seamlessly toggleable with the 2D diagram.
+- **Drug Interaction Checker**: Clinical pharmacology cross-referencing engine detecting high-risk contraindications and polypharmacy risks across up to 6 concurrent medications.
+- **Voice-Assisted Symptom Logging**: Hands-free voice recognition powered by Web Speech API with adaptive `ur-PK` (Pakistani Urdu) and `en-US` speech recognition.
 - **Emergency Triage & Red-Flag Detection**: Automatic warning alerts for high-risk cardiac, neurological (FAST stroke signs), and respiratory emergencies with direct emergency helpline access.
-- **Clinical Prescription Sheets**: One-click generation of browser-printable and ReportLab PDF prescriptions formatted with physician-grade disclaimers and dosage warnings.
+- **Clinical Prescription Sheets**: One-click generation of browser-printable and PDF prescriptions formatted with physician-grade disclaimers and dosage warnings.
 
 ### 📊 Holistic Health Tracking & Dashboard
 - **BMI (Body Mass Index) Calculator**: Dual metric/imperial calculation with real-time WHO classification and target weight advice.

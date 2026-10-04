@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import {
   Stethoscope, Brain, ClipboardList, Zap, Loader2,
   Thermometer, Wind, Droplets, HeartPulse, Shield,
-  AlertTriangle, Search, CheckCircle2, X,
+  AlertTriangle, Search, CheckCircle2, X, Sparkles,
   User as UserIcon, ChevronDown, ChevronRight
 } from 'lucide-react'
 
@@ -23,6 +23,20 @@ import { VoiceInputButton } from '@/components/symptom-checker/voice-input-butto
 import { SymptomBodyMap, CATEGORY_ICONS, BODY_REGIONS } from '@/components/symptom-checker/symptom-body-map'
 import { EmergencyAlert } from '@/components/symptom-checker/emergency-alert'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import dynamic from 'next/dynamic'
+
+const SymptomBodyMap3D = dynamic(
+  () => import('@/components/symptom-checker/symptom-body-map-3d').then(mod => mod.SymptomBodyMap3D),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[420px] w-full rounded-2xl bg-slate-950/60 border border-slate-800 animate-pulse flex flex-col items-center justify-center gap-3 text-slate-400">
+        <Loader2 className="size-8 text-primary animate-spin" />
+        <span className="text-xs">Loading 3D Anatomy Model...</span>
+      </div>
+    ),
+  }
+)
 
 function SymptomCheckerTab() {
   const {
@@ -34,6 +48,9 @@ function SymptomCheckerTab() {
 
   const [categories, setCategories] = useState<Record<string, { id: string; name: string; description: string | null }[]>>({})
   const [bodyRegion, setBodyRegion] = useState<string | null>(null)
+  const [selected3DCategories, setSelected3DCategories] = useState<string[] | null>(null)
+  const [selected3DLabel, setSelected3DLabel] = useState<string | null>(null)
+  const [bodyMapMode, setBodyMapMode] = useState<'3d' | '2d'>('3d')
   const [showBodyMap, setShowBodyMap] = useState(false)
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
 
@@ -55,10 +72,19 @@ function SymptomCheckerTab() {
     fetchSymptoms()
   }, [setSymptoms, setIsLoadingSymptoms])
 
-  // Filter symptoms based on search and body region
+  // Filter symptoms based on search, 3D organ selection, and 2D body region
   const filteredCategories = useMemo(() => {
     let cats = categories
-    if (bodyRegion && BODY_REGIONS[bodyRegion]) {
+
+    if (selected3DCategories && selected3DCategories.length > 0) {
+      const filtered: Record<string, { id: string; name: string; description: string | null }[]> = {}
+      for (const [cat, syms] of Object.entries(cats)) {
+        if (selected3DCategories.includes(cat)) {
+          filtered[cat] = syms
+        }
+      }
+      cats = filtered
+    } else if (bodyRegion && BODY_REGIONS[bodyRegion]) {
       const regionCategories = BODY_REGIONS[bodyRegion].categories
       const filtered: Record<string, { id: string; name: string; description: string | null }[]> = {}
       for (const [cat, syms] of Object.entries(cats)) {
@@ -68,6 +94,7 @@ function SymptomCheckerTab() {
       }
       cats = filtered
     }
+
     if (!symptomSearch.trim()) return cats
     const search = symptomSearch.toLowerCase()
     const filtered: Record<string, { id: string; name: string; description: string | null }[]> = {}
@@ -80,7 +107,7 @@ function SymptomCheckerTab() {
       if (matching.length > 0) filtered[cat] = matching
     }
     return filtered
-  }, [categories, symptomSearch, bodyRegion])
+  }, [categories, symptomSearch, bodyRegion, selected3DCategories])
 
   // Selected symptom objects
   const selectedSymptoms = useMemo(
@@ -285,16 +312,30 @@ function SymptomCheckerTab() {
             <Button
               variant={showBodyMap ? 'default' : 'outline'}
               size="sm"
-              onClick={() => { setShowBodyMap(!showBodyMap); setBodyRegion(null) }}
+              onClick={() => {
+                setShowBodyMap(!showBodyMap)
+                if (showBodyMap) {
+                  setBodyRegion(null)
+                  setSelected3DCategories(null)
+                  setSelected3DLabel(null)
+                }
+              }}
               className="gap-2"
             >
               <UserIcon className="size-4" />
-              {showBodyMap ? 'Hide' : 'Show'} Body Map
+              {showBodyMap ? 'Hide' : 'Show'} Anatomy Map
             </Button>
-            {bodyRegion && (
+            {(selected3DLabel || (bodyRegion && BODY_REGIONS[bodyRegion])) && (
               <Badge variant="secondary" className="gap-1">
-                Filtering: {BODY_REGIONS[bodyRegion]?.label}
-                <button onClick={() => setBodyRegion(null)} className="ml-1 hover:text-destructive">
+                Filtering: {selected3DLabel || (bodyRegion ? BODY_REGIONS[bodyRegion]?.label : '')}
+                <button
+                  onClick={() => {
+                    setBodyRegion(null)
+                    setSelected3DCategories(null)
+                    setSelected3DLabel(null)
+                  }}
+                  className="ml-1 hover:text-destructive"
+                >
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -337,18 +378,70 @@ function SymptomCheckerTab() {
         </div>
       )}
 
-      <div className="flex gap-6">
-        {/* Body Map Sidebar */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Interactive Anatomy Map Container (3D Model / 2D Diagram) */}
         <AnimatePresence>
           {showBodyMap && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              className="shrink-0"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
+              className="w-full lg:w-[420px] shrink-0"
             >
-              <Card className="p-4">
-                <SymptomBodyMap activeRegion={bodyRegion} setActiveRegion={setBodyRegion} />
+              <Card className="p-4 border border-border/80 shadow-lg">
+                {/* 3D vs 2D Mode Switcher Header */}
+                <div className="flex items-center justify-between mb-3 pb-2 border-b">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="size-4 text-cyan-500 animate-pulse" />
+                    <span className="text-xs font-bold text-foreground">
+                      {bodyMapMode === '3d' ? '3D Human Anatomy' : '2D Diagram'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center rounded-lg border bg-muted/60 p-0.5">
+                    <button
+                      onClick={() => setBodyMapMode('3d')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                        bodyMapMode === '3d'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      3D Model
+                    </button>
+                    <button
+                      onClick={() => setBodyMapMode('2d')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                        bodyMapMode === '2d'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      2D Diagram
+                    </button>
+                  </div>
+                </div>
+
+                {bodyMapMode === '3d' ? (
+                  <SymptomBodyMap3D
+                    activeRegion={bodyRegion}
+                    onSelectCategories={(cats, label) => {
+                      setSelected3DCategories(cats)
+                      setSelected3DLabel(label)
+                      setBodyRegion(null)
+                    }}
+                  />
+                ) : (
+                  <SymptomBodyMap
+                    activeRegion={bodyRegion}
+                    setActiveRegion={(r) => {
+                      setBodyRegion(r)
+                      setSelected3DCategories(null)
+                      setSelected3DLabel(null)
+                    }}
+                  />
+                )}
               </Card>
             </motion.div>
           )}
