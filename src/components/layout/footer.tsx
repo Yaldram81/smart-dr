@@ -17,13 +17,14 @@ export function Footer() {
   const quickLinks = [
     { label: 'Home', href: '/', icon: <HeartPulse className="size-3.5" /> },
     { label: 'Symptom Checker', href: '/checker', icon: <Stethoscope className="size-3.5" /> },
+    { label: 'Disease Directory', href: '/#diseases', icon: <ChevronRight className="size-3.5" /> },
     ...(user ? [{ label: 'Dashboard', href: '/dashboard', icon: <BarChart3 className="size-3.5" /> }] : []),
   ]
 
   const resourceLinks = [
-    { label: 'AI Health Chat', href: '#', icon: <MessageSquare className="size-3.5" /> },
-    { label: 'Health Tips', href: '#', icon: <Zap className="size-3.5" /> },
-    { label: 'FAQ', href: '#', icon: <ChevronRight className="size-3.5" /> },
+    { label: 'Health Insights & Articles', href: '/#insights', icon: <Zap className="size-3.5" /> },
+    { label: 'Frequently Asked Questions', href: '/#faq', icon: <ChevronRight className="size-3.5" /> },
+    { label: 'About & Medical Team', href: '/#about', icon: <ChevronRight className="size-3.5" /> },
   ]
 
   const socialLinks = [
@@ -99,13 +100,15 @@ export function Footer() {
             </h4>
             <div className="space-y-2.5">
               {resourceLinks.map((link) => (
-                <span
+                <Link
                   key={link.label}
+                  href={link.href}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2 group"
                 >
                   <span className="opacity-50 group-hover:opacity-100 transition-opacity">{link.icon}</span>
                   <span>{link.label}</span>
-                </span>
+                  <ChevronRight className="size-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                </Link>
               ))}
             </div>
           </div>
