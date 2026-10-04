@@ -161,6 +161,9 @@ function SymptomCheckerTab() {
         body: JSON.stringify({
           symptomIds: selectedSymptomIds,
           userId: user?.id,
+          patientAge: user?.age,
+          patientGender: user?.gender,
+          language: language,
           includeLLMAnalysis: predictionEngine === 'online-ai',
           privacyMode: privacyMode,
           engine: predictionEngine,

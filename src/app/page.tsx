@@ -108,17 +108,35 @@ export default function Home() {
 
   const variants = getTransitionVariants(prevSection, currentSection)
 
-  // Restore user from localStorage on mount
+  // Restore user session securely from HTTP-Only cookie via /api/auth/me
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('medpredict_user')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        setUser(parsed)
+    let isMounted = true
+    const hydrateSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.user && isMounted) {
+            setUser(data.user)
+            return
+          }
+        }
+      } catch {
+        // fallback to storage if offline
       }
-    } catch {
-      // ignore
+
+      try {
+        const stored = localStorage.getItem('medpredict_user')
+        if (stored && isMounted) {
+          const parsed = JSON.parse(stored)
+          setUser(parsed)
+        }
+      } catch {
+        // ignore
+      }
     }
+    hydrateSession()
+    return () => { isMounted = false }
   }, [setUser])
 
   // Redirect from dashboard to home if user logs out

@@ -49,8 +49,18 @@ export function Navbar() {
     setMobileMenuOpen(false)
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // ignore network errors on logout
+    }
     logout()
+    try {
+      localStorage.removeItem('medpredict_user')
+    } catch {
+      // ignore
+    }
     toast({ title: 'Logged out', description: 'You have been logged out successfully.' })
     // Navigate away from dashboard if on it
     if (activeSection === 'dashboard') {

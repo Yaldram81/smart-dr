@@ -1,0 +1,19 @@
+{
+  "name": "Smart.Dr - AI-Powered Disease Prediction System",
+  "short_name": "Smart.Dr",
+  "description": "Dual-engine AI and clinical symptom-based disease prediction system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "health", "education"]
+}

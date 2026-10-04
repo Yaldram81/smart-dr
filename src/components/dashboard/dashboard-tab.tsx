@@ -14,6 +14,7 @@ import { WaterIntakeTracker } from '@/components/dashboard/water-intake-tracker'
 import { UserProfileCard } from '@/components/dashboard/user-profile-card'
 import { HealthScoreTimeline } from '@/components/dashboard/health-score-timeline'
 import { MedicationReminder } from '@/components/dashboard/medication-reminder'
+import { DrugInteractionChecker } from '@/components/dashboard/drug-interaction-checker'
 
 export default function DashboardTab() {
   const { user } = useAppStore()
@@ -38,6 +39,7 @@ export default function DashboardTab() {
       <div className="grid lg:grid-cols-2 gap-6">
         <HealthScoreTimeline />
         <MedicationReminder />
+        <DrugInteractionChecker />
         <BMICalculator />
         <HealthAssessmentScore />
         <QuickStats />

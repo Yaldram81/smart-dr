@@ -478,46 +478,100 @@ function PredictionResultsTab() {
         <Button
           variant="outline"
           className="gap-2"
-          onClick={async () => {
-            try {
-              toast({ title: 'Generating PDF...', description: 'Creating professional prescription via ReportLab' })
-              const { user } = useAppStore.getState()
-              const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-              const selectedSymptoms = predictions.flatMap(p => p.matchedSymptoms)
-              const uniqueSymptoms = [...new Set(selectedSymptoms)]
-              const res = await fetch('/api/generate-pdf?XTransformPort=3031', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  patientName: user?.name || 'Guest Patient',
-                  patientEmail: user?.email || '',
-                  symptoms: uniqueSymptoms,
-                  predictions: predictions.map(p => ({
-                    disease: p.disease,
-                    confidence: p.confidence / 100,
-                    severity: p.severity,
-                    specialist: p.specialist,
-                  })),
-                  llmAnalysis: llmAnalysis || '',
-                  date,
-                }),
-              })
-              if (!res.ok) throw new Error('PDF generation failed')
-              const data = await res.json()
-              if (data.pdfUrl) {
-                const link = document.createElement('a')
-                link.href = data.pdfUrl + '?XTransformPort=3031'
-                link.download = data.filename || 'prescription.pdf'
-                link.click()
-                toast({ title: 'PDF Generated!', description: 'Professional prescription downloaded via ReportLab' })
-              }
-            } catch {
-              toast({ title: 'PDF Generation Failed', description: 'Could not generate ReportLab PDF. Try the HTML prescription instead.', variant: 'destructive' })
+          onClick={() => {
+            toast({ title: 'Preparing PDF...', description: 'Opening print dialog. Select "Save as PDF" as destination.' })
+            const { user } = useAppStore.getState()
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            const selectedSymptoms = predictions.flatMap(p => p.matchedSymptoms)
+            const uniqueSymptoms = [...new Set(selectedSymptoms)]
+
+            const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Smart.Dr Prescription - ${date}</title>
+  <style>
+    @page { size: A4; margin: 15mm; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 25px; color: #1e293b; line-height: 1.5; font-size: 13px; }
+    .header { text-align: center; border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 20px; }
+    .header h1 { margin: 0 0 4px 0; color: #0284c7; font-size: 24px; font-weight: 800; }
+    .header p { margin: 2px 0; color: #64748b; font-size: 12px; }
+    .patient-bar { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 18px; font-size: 12px; }
+    .section { margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+    .tag { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 9999px; margin: 2px; font-size: 11px; font-weight: 500; }
+    .prediction-box { background: #fafafa; border-left: 4px solid #0284c7; padding: 10px; margin-bottom: 10px; border-radius: 0 6px 6px 0; }
+    .badge-score { background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .disclaimer { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 12px; margin-top: 20px; font-size: 11px; color: #92400e; }
+    .footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+    @media print { body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🩺 Smart.Dr Clinical Decision Support</h1>
+    <p>AI-Assisted Diagnostic Assessment & Clinical Summary</p>
+    <p>University of Malakand | Dept of CS & IT</p>
+  </div>
+
+  <div class="patient-bar">
+    <div><strong>Patient:</strong> ${user ? user.name : 'Guest Patient'}</div>
+    <div><strong>Email:</strong> ${user ? user.email : 'N/A'}</div>
+    <div><strong>Date:</strong> ${date}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Reported Symptoms</div>
+    <div>${uniqueSymptoms.map(s => `<span class="tag">${s}</span>`).join('')}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Differential Diagnoses & Recommendations</div>
+    ${predictions.map((p, idx) => `
+      <div class="prediction-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="font-size: 14px;">${idx + 1}. ${p.disease}</strong>
+          <div>
+            <span class="badge-score">Confidence: ${p.confidence}%</span>
+            <span style="font-size: 11px; text-transform: uppercase; font-weight: bold; margin-left: 6px;">${p.severity}</span>
+          </div>
+        </div>
+        <p style="margin: 4px 0 6px 0; color: #475569; font-size: 12px;">${p.description}</p>
+        <p style="margin: 2px 0;"><strong>Recommended Specialist:</strong> ${p.specialist}</p>
+        ${p.precautions.length > 0 ? `<p style="margin: 4px 0 2px 0;"><strong>Key Precautions:</strong> ${p.precautions.join(' • ')}</p>` : ''}
+        ${p.medications.length > 0 ? `<p style="margin: 2px 0;"><strong>Medication Guidance:</strong> ${p.medications.join(' • ')}</p>` : ''}
+        ${p.diet.length > 0 ? `<p style="margin: 2px 0;"><strong>Dietary Protocol:</strong> ${p.diet.join(' • ')}</p>` : ''}
+      </div>
+    `).join('')}
+  </div>
+
+  ${llmAnalysis ? `
+  <div class="section">
+    <div class="section-title">AI Clinical Evaluation</div>
+    <div style="font-size: 12px; line-height: 1.6; white-space: pre-wrap;">${llmAnalysis.replace(/[#*]/g, '')}</div>
+  </div>
+  ` : ''}
+
+  <div class="disclaimer">
+    <strong>⚠️ Medical Disclaimer:</strong> This document is generated for academic and decision-support purposes only. It is not an official medical diagnosis. Always consult a licensed healthcare practitioner.
+  </div>
+
+  <div class="footer">
+    Smart.Dr Health Intelligence • Generated on ${date}
+  </div>
+</body>
+</html>`
+
+            const printWindow = window.open('', '_blank')
+            if (printWindow) {
+              printWindow.document.write(html)
+              printWindow.document.close()
+              setTimeout(() => { printWindow.print() }, 400)
             }
           }}
         >
           <Download className="size-4" />
-          ReportLab PDF
+          Export PDF
         </Button>
       </div>
     </div>

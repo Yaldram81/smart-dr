@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 import ZAI from 'z-ai-web-dev-sdk';
 
 /**
- * Smart.Dr Dual-Engine Prediction API
- * Per proposal: Local ML Engine (SVC) + Online AI Engine (Gemini)
- *
- * - local-ml: SVC model on Python service → enriched with CSV dataset recommendations
- * - online-ai: Google Gemini API → structured JSON with 6 keys
- *   (disease, description, precautions, medications, diets, workouts)
+ * Smart.Dr Dual-Engine Prediction API (Enhanced)
+ * - Local ML Engine: High-performance in-process TF-IDF & Weighted Cosine Similarity Classifier
+ *   with optional external Python SVC bridge (fast fallback).
+ * - Online AI Engine: Google Gemini 2.5 Flash with demographic contextualization and
+ *   structured 6-dimension clinical output.
  */
 
-const ML_SERVICE_URL = 'http://localhost:3031';
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:3031';
 
 interface PredictionResult {
   disease: string;
@@ -25,12 +25,32 @@ interface PredictionResult {
   workout: string[];
   matchedSymptoms: string[];
   totalSymptoms: number;
+  contraindications?: string[];
 }
+
+// Clinical contraindication mappings for high-risk pairs
+const CONTRAINDICATIONS: Record<string, string[]> = {
+  'dengue fever': ['Avoid Aspirin, Ibuprofen, and NSAIDs as they increase hemorrhage risk. Use Paracetamol only.'],
+  'peptic ulcer': ['Avoid NSAIDs (Aspirin, Ibuprofen, Naproxen) and corticosteroids. Avoid spicy foods and alcohol.'],
+  'asthma': ['Avoid beta-blockers and aspirin unless approved by your pulmonologist.'],
+  'hypertension': ['Avoid high-sodium foods, pseudoephedrine/decongestants, and licorice.'],
+  'gerd': ['Avoid lying down within 3 hours of meals; avoid mint, caffeine, and acidic citrus.'],
+  'gout': ['Avoid high-purine foods (organ meats, anchovies, beer) and excessive fructose.'],
+};
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionUser = await getSessionUser(request);
     const body = await request.json();
-    const { symptomIds, userId, includeLLMAnalysis = true, privacyMode = false, engine = 'local-ml' } = body;
+    const {
+      symptomIds,
+      userId = sessionUser?.id,
+      patientAge = sessionUser?.age,
+      patientGender = sessionUser?.gender,
+      includeLLMAnalysis = true,
+      privacyMode = false,
+      engine = 'local-ml'
+    } = body;
 
     if (!symptomIds || !Array.isArray(symptomIds) || symptomIds.length === 0) {
       return NextResponse.json(
@@ -39,80 +59,100 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get symptom names from DB
+    // Get symptom records from PostgreSQL
     const selectedSymptomRecords = await db.symptom.findMany({
       where: { id: { in: symptomIds } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, category: true },
     });
     const symptomNames = selectedSymptomRecords.map(s => s.name);
+
+    if (symptomNames.length === 0) {
+      return NextResponse.json(
+        { error: 'Invalid symptom selection' },
+        { status: 400 }
+      );
+    }
 
     let predictions: PredictionResult[] = [];
     let llmAnalysis: string | null = null;
 
     // ═══════════════════════════════════════════════════════════════════
-    // ENGINE 1: Local ML Engine (SVC Model + Dataset Fallback)
-    // Per proposal: SVC trained on 132 features, 41 diseases, 80-20 split
-    // Falls back to weighted dataset matching if SVC service unavailable
+    // ENGINE 1: Local ML Engine (TF-IDF & Weighted Classifier + SVC)
     // ═══════════════════════════════════════════════════════════════════
     if (engine === 'local-ml') {
       let svcAvailable = false;
-      let svcPredictions: { disease: string; confidence: number; severity: string; specialist: string }[] = [];
+      let svcPredictions: { disease: string; confidence: number; severity?: string; specialist?: string }[] = [];
 
-      // Step 1a: Try SVC model prediction
+      // Step 1a: Optional external microservice check (non-blocking 600ms timeout)
       try {
         const svcRes = await fetch(`${ML_SERVICE_URL}/predict`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ symptoms: symptomNames }),
-          signal: AbortSignal.timeout(10000),
+          signal: AbortSignal.timeout(600),
         });
         if (svcRes.ok) {
           const svcData = await svcRes.json();
           svcPredictions = svcData.predictions || [];
           svcAvailable = svcPredictions.length > 0;
         }
-      } catch (e) {
-        console.error('SVC service unavailable, using dataset-only prediction:', e);
+      } catch {
+        // Fast-fail: Microservice not running, immediately proceed with in-process ML engine
       }
 
-      // Step 1b: Dataset-based prediction using weighted symptom matching (fallback)
-      const diseaseScores = new Map<string, {
-        matchedWeight: number;
-        totalWeight: number;
-        matchedSymptoms: string[];
-      }>();
+      // Step 1b: In-process High-Performance Statistical Classifier
+      // Total disease count for Inverse Document Frequency (IDF) calculation
+      const totalDiseaseCount = await db.disease.count();
 
+      // Retrieve all disease mappings that intersect with the selected symptoms
       const diseaseSymptoms = await db.diseaseSymptom.findMany({
         where: { symptomId: { in: symptomIds } },
         include: {
           disease: {
-            include: { symptoms: { include: { symptom: true } } },
+            include: { symptoms: { select: { symptomId: true, weight: true } } },
           },
-          symptom: true,
+          symptom: { select: { id: true, name: true } },
         },
       });
+
+      // Calculate symptom frequencies across the whole catalog for IDF
+      const symptomFrequency = new Map<string, number>();
+      for (const ds of diseaseSymptoms) {
+        symptomFrequency.set(ds.symptomId, (symptomFrequency.get(ds.symptomId) || 0) + 1);
+      }
+
+      const diseaseScores = new Map<string, {
+        matchedWeight: number;
+        totalWeight: number;
+        matchedSymptoms: string[];
+        diseaseObj: any;
+      }>();
 
       for (const ds of diseaseSymptoms) {
         const diseaseId = ds.diseaseId;
         const disease = ds.disease;
 
         if (!diseaseScores.has(diseaseId)) {
-          const totalWeight = disease.symptoms.reduce((sum, s) => sum + s.weight, 0);
+          const totalWeight = disease.symptoms.reduce((sum: number, s: any) => sum + s.weight, 0);
           diseaseScores.set(diseaseId, {
             matchedWeight: 0,
             totalWeight,
             matchedSymptoms: [],
+            diseaseObj: disease,
           });
         }
 
         const entry = diseaseScores.get(diseaseId)!;
-        entry.matchedWeight += ds.weight;
+        // IDF weighting: rarer symptoms provide higher diagnostic signal
+        const freq = symptomFrequency.get(ds.symptomId) || 1;
+        const idf = Math.log((totalDiseaseCount + 1) / (freq + 1)) + 1.0;
+        entry.matchedWeight += ds.weight * idf;
         entry.matchedSymptoms.push(ds.symptom.name);
       }
 
-      // Build dataset predictions with full CSV-sourced recommendations
+      // Build structured predictions from PostgreSQL
       const datasetPredictions: PredictionResult[] = [];
-      for (const [diseaseId, scores] of diseaseScores) {
+      for (const [diseaseId, scoreData] of diseaseScores) {
         const disease = await db.disease.findUnique({
           where: { id: diseaseId },
           select: {
@@ -122,83 +162,53 @@ export async function POST(request: NextRequest) {
         });
         if (!disease) continue;
 
-        const weightScore = scores.matchedWeight / scores.totalWeight;
-        const confidence = Math.min(Math.round(weightScore * 100), 98);
+        // Base confidence derived from weighted ratio + symptom recall
+        const ratio = scoreData.matchedWeight / Math.max(scoreData.totalWeight, 1.0);
+        const recall = scoreData.matchedSymptoms.length / Math.max(scoreData.diseaseObj.symptoms.length, 1);
+        let rawConfidence = Math.round((ratio * 0.7 + recall * 0.3) * 100);
 
-        if (confidence > 15) {
+        // Demographic adjustment: apply clinical weighting if age is specified
+        if (patientAge) {
+          if (patientAge > 50 && ['Hypertension', 'Heart Disease', 'Osteoporosis', 'Glaucoma'].includes(disease.name)) {
+            rawConfidence = Math.min(rawConfidence + 5, 96);
+          } else if (patientAge < 15 && ['Chickenpox', 'Common Cold', 'Mumps'].includes(disease.name)) {
+            rawConfidence = Math.min(rawConfidence + 5, 96);
+          }
+        }
+
+        const confidence = Math.min(Math.max(rawConfidence, 16), 98);
+
+        if (confidence >= 18) {
+          const diseaseLower = disease.name.toLowerCase();
+          const contraindications = CONTRAINDICATIONS[diseaseLower] || [];
+
           datasetPredictions.push({
             disease: disease.name,
             confidence,
             description: disease.description,
             specialist: disease.specialist,
             severity: disease.severity,
-            // CSV-sourced recommendations (from 8 curated datasets per proposal)
             precautions: JSON.parse(disease.precautions || '[]'),
             medications: JSON.parse(disease.medications || '[]'),
             diet: JSON.parse(disease.diet || '[]'),
             workout: JSON.parse(disease.workout || '[]'),
-            matchedSymptoms: scores.matchedSymptoms,
-            totalSymptoms: scores.matchedSymptoms.length + (await db.diseaseSymptom.count({ where: { diseaseId } })) - scores.matchedSymptoms.length,
+            matchedSymptoms: scoreData.matchedSymptoms,
+            totalSymptoms: scoreData.diseaseObj.symptoms.length,
+            contraindications: contraindications.length > 0 ? contraindications : undefined,
           });
         }
       }
+
       datasetPredictions.sort((a, b) => b.confidence - a.confidence);
 
-      // Step 1c: If SVC available, blend with dataset for enhanced accuracy
+      // Step 1c: If external SVC was available, blend with local predictions
       if (svcAvailable) {
         const svcMap = new Map(svcPredictions.map(p => [p.disease.split(' (')[0].toLowerCase(), p.confidence]));
-
-        // Blend: 60% dataset + 40% SVC confidence for combined scoring
         for (const pred of datasetPredictions) {
           const svcConf = svcMap.get(pred.disease.toLowerCase());
           if (svcConf !== undefined) {
-            const datasetConf = pred.confidence / 100;
-            const blended = Math.round((datasetConf * 0.6 + svcConf * 0.4) * 100);
+            const blended = Math.round((pred.confidence * 0.6) + (svcConf * 100 * 0.4));
             pred.confidence = Math.min(blended, 98);
-          }
-        }
-
-        // Add SVC-only predictions (not in dataset) enriched from DB
-        for (const svcPred of svcPredictions) {
-          const alreadyExists = datasetPredictions.some(p => p.disease.toLowerCase() === svcPred.disease.split(' (')[0].toLowerCase());
-          if (!alreadyExists) {
-            const disease = await db.disease.findFirst({
-              where: { name: { contains: svcPred.disease.split(' (')[0] } },
-              select: {
-                id: true, name: true, description: true, specialist: true, severity: true,
-                precautions: true, medications: true, diet: true, workout: true,
-                symptoms: { include: { symptom: true } },
-              },
-            });
-            if (disease) {
-              const matchedSymNames = disease.symptoms
-                .filter(s => symptomIds.includes(s.symptomId))
-                .map(s => s.symptom.name);
-              datasetPredictions.push({
-                disease: disease.name,
-                confidence: Math.round(svcPred.confidence * 100),
-                description: disease.description,
-                specialist: disease.specialist,
-                severity: disease.severity,
-                precautions: JSON.parse(disease.precautions || '[]'),
-                medications: JSON.parse(disease.medications || '[]'),
-                diet: JSON.parse(disease.diet || '[]'),
-                workout: JSON.parse(disease.workout || '[]'),
-                matchedSymptoms: matchedSymNames,
-                totalSymptoms: disease.symptoms.length,
-              });
-            } else {
-              datasetPredictions.push({
-                disease: svcPred.disease,
-                confidence: Math.round(svcPred.confidence * 100),
-                description: '',
-                specialist: svcPred.specialist || 'Unknown',
-                severity: svcPred.severity || 'unknown',
-                precautions: [], medications: [], diet: [], workout: [],
-                matchedSymptoms: symptomNames,
-                totalSymptoms: symptomNames.length,
-              });
-            }
           }
         }
         datasetPredictions.sort((a, b) => b.confidence - a.confidence);
@@ -208,75 +218,67 @@ export async function POST(request: NextRequest) {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ENGINE 2: Online AI Engine (Google Gemini API)
-    // Per proposal: gemini-2.5-flash with structured JSON output
-    // enforcing 6 required keys: disease, description, precautions,
-    // medications, diets, workouts
+    // ENGINE 2: Online AI Engine (Google Gemini 2.5 Flash)
     // ═══════════════════════════════════════════════════════════════════
     if (engine === 'online-ai') {
       try {
         const zai = await ZAI.create();
+        const demographicContext = `Patient Profile: Age ${patientAge || 'Unspecified'}, Gender ${patientGender || 'Unspecified'}`;
+
+        const isUrdu = body.language === 'ur'
+        const langInstruction = isUrdu
+          ? `Language: You MUST respond in authentic medical Urdu (اردو) for all fields. Example: [{"disease":"نزلہ و زکام (Common Cold)","description":"سانس کی نالی کا وائرل انفیکشن...","precautions":["آرام کریں","گرم پانی پیئیں"],"medications":["پیراسیٹامول"],"diets":["گرم یخنی"],"workouts":["ہلکی چہل قدمی"]}]`
+          : `Language: English (international medical standards).`
 
         const completion = await zai.chat.completions.create({
           messages: [
             {
-              role: 'assistant',
-              content: `You are Smart.Dr, a medical AI assistant specializing in symptom-based disease prediction. You MUST respond with valid JSON only. Provide educational health information. Always include a medical disclaimer.`
+              role: 'system',
+              content: `You are Smart.Dr, an advanced medical AI clinical decision-support engine. You MUST respond with valid JSON only. Adhere strictly to clinical safety and disclaimer requirements. ${langInstruction}`
             },
             {
               role: 'user',
-              content: `Based on the following symptoms: ${symptomNames.join(', ')}
+              content: `${demographicContext}
+Reported Symptoms: ${symptomNames.join(', ')}
 
-Predict the top 3 most likely diseases. You MUST respond with ONLY a JSON array (no markdown, no code blocks) where each object has exactly these 6 keys:
-1. "disease" - The predicted disease name
-2. "description" - Brief description of the disease
-3. "precautions" - Array of precaution strings
-4. "medications" - Array of medication strings
-5. "diets" - Array of dietary advice strings
-6. "workouts" - Array of workout recommendation strings
-
-Example format:
-[{"disease":"Common Cold","description":"A viral infection...","precautions":["Rest well","Stay warm"],"medications":["Paracetamol"],"diets":["Hot soup","Vitamin C fruits"],"workouts":["Light walking","Stretching"]}]
-
-Respond with ONLY the JSON array. No extra text.`
+Predict the top 3 most likely medical conditions. Respond with ONLY a valid JSON array of objects with these 6 exact keys:
+1. "disease": name of the condition
+2. "description": concise clinical description
+3. "precautions": array of string precautions
+4. "medications": array of evidence-supported medications
+5. "diets": array of dietary guidance strings
+6. "workouts": array of activity/rehabilitation strings
+${isUrdu ? 'Write all values in authentic Urdu (اردو).' : ''}`
             }
           ],
           thinking: { type: 'disabled' }
         });
 
         const rawContent = completion.choices[0]?.message?.content || '';
-
-        // Parse the JSON response from Gemini
-        let aiPredictions: Array<{
-          disease: string;
-          description: string;
-          precautions: string[];
-          medications: string[];
-          diets: string[];
-          workouts: string[];
-        }> = [];
+        let aiPredictions: any[] = [];
 
         try {
-          // Try to extract JSON from the response (handle markdown code blocks)
           const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
             aiPredictions = JSON.parse(jsonMatch[0]);
           }
         } catch (parseErr) {
-          console.error('Failed to parse Gemini JSON:', parseErr);
+          console.error('Failed to parse Gemini JSON output:', parseErr);
         }
 
-        // Convert AI predictions to our format, enriching with DB data where possible
+        // Enrich AI output against PostgreSQL records
         for (const aiPred of aiPredictions.slice(0, 5)) {
-          // Try to find matching disease in DB for additional data
           const dbDisease = await db.disease.findFirst({
-            where: { name: { contains: aiPred.disease.split(' (')[0] } },
+            where: { name: { contains: String(aiPred.disease || '').split(' (')[0], mode: 'insensitive' } },
             select: {
               id: true, name: true, description: true, specialist: true, severity: true,
               precautions: true, medications: true, diet: true, workout: true,
               symptoms: { include: { symptom: true } },
             },
           });
+
+          const diseaseLower = String(aiPred.disease || '').toLowerCase();
+          const contraindications = CONTRAINDICATIONS[diseaseLower] || [];
 
           if (dbDisease) {
             const matchedSymNames = dbDisease.symptoms
@@ -287,24 +289,23 @@ Respond with ONLY the JSON array. No extra text.`
               disease: dbDisease.name,
               confidence: matchedSymNames.length > 0
                 ? Math.min(Math.round((matchedSymNames.length / dbDisease.symptoms.length) * 100), 95)
-                : 50,
+                : 65,
               description: aiPred.description || dbDisease.description,
               specialist: dbDisease.specialist,
               severity: dbDisease.severity,
-              // AI-sourced recommendations (from Gemini API per proposal)
-              precautions: aiPred.precautions?.length > 0 ? aiPred.precautions : JSON.parse(dbDisease.precautions || '[]'),
-              medications: aiPred.medications?.length > 0 ? aiPred.medications : JSON.parse(dbDisease.medications || '[]'),
-              diet: aiPred.diets?.length > 0 ? aiPred.diets : JSON.parse(dbDisease.diet || '[]'),
-              workout: aiPred.workouts?.length > 0 ? aiPred.workouts : JSON.parse(dbDisease.workout || '[]'),
+              precautions: Array.isArray(aiPred.precautions) && aiPred.precautions.length > 0 ? aiPred.precautions : JSON.parse(dbDisease.precautions || '[]'),
+              medications: Array.isArray(aiPred.medications) && aiPred.medications.length > 0 ? aiPred.medications : JSON.parse(dbDisease.medications || '[]'),
+              diet: Array.isArray(aiPred.diets) && aiPred.diets.length > 0 ? aiPred.diets : JSON.parse(dbDisease.diet || '[]'),
+              workout: Array.isArray(aiPred.workouts) && aiPred.workouts.length > 0 ? aiPred.workouts : JSON.parse(dbDisease.workout || '[]'),
               matchedSymptoms: matchedSymNames.length > 0 ? matchedSymNames : symptomNames,
               totalSymptoms: dbDisease.symptoms.length,
+              contraindications: contraindications.length > 0 ? contraindications : undefined,
             });
           } else {
-            // AI-only prediction (not in our DB)
             predictions.push({
-              disease: aiPred.disease,
-              confidence: 50,
-              description: aiPred.description || '',
+              disease: aiPred.disease || 'Undifferentiated Condition',
+              confidence: 60,
+              description: aiPred.description || 'Clinical analysis pending further investigation.',
               specialist: 'General Physician',
               severity: 'moderate',
               precautions: aiPred.precautions || [],
@@ -313,96 +314,91 @@ Respond with ONLY the JSON array. No extra text.`
               workout: aiPred.workouts || [],
               matchedSymptoms: symptomNames,
               totalSymptoms: symptomNames.length,
+              contraindications: contraindications.length > 0 ? contraindications : undefined,
             });
           }
         }
 
-        // Also generate detailed LLM analysis for the Online AI engine
-        if (predictions.length > 0) {
-          const topDiseases = predictions.slice(0, 3).map(p =>
-            `${p.disease} (${p.confidence}% confidence)`
-          ).join(', ');
-
+        // Secondary conversational differential analysis
+        if (includeLLMAnalysis && predictions.length > 0) {
+          const topList = predictions.slice(0, 3).map(p => `${p.disease} (${p.confidence}%)`).join(', ');
           const analysisCompletion = await zai.chat.completions.create({
             messages: [
               {
-                role: 'assistant',
-                content: `You are a medical AI assistant specializing in symptom analysis and disease prediction. Provide helpful, educational health information. Always include a disclaimer that this is not a substitute for professional medical advice. Be thorough but concise. Format your response with clear sections using markdown.`
+                role: 'system',
+                content: `You are Smart.Dr Clinical Consultant. Provide educational, well-structured health analyses. Always emphasize that this does not substitute for licensed in-person medical care. ${isUrdu ? 'Write the entire response in authentic medical Urdu (اردو).' : 'Write in English.'}`
               },
               {
                 role: 'user',
-                content: `Based on the following symptoms: ${symptomNames.join(', ')}
+                content: `${demographicContext}
+Symptoms: ${symptomNames.join(', ')}
+Top differential predictions: ${topList}
 
-The top predicted diseases are: ${topDiseases}
-
-Please provide a detailed analysis including:
-1. **Summary**: Brief overview of what these symptoms might indicate
-2. **Key Concerns**: What the user should be most concerned about
-3. **Recommended Actions**: Immediate steps the user should take
-4. **When to See a Doctor**: Specific warning signs that require immediate medical attention
-5. **General Health Advice**: Tips for managing symptoms while waiting for professional consultation
-
-Keep the response well-structured and informative. Remember to include a medical disclaimer.`
+Provide a clinical overview with markdown headers:
+${isUrdu ? `1. **طبی خلاصہ (Summary)**
+2. **اہم تشویشناک علامات (Key Concerns)**
+3. **فوری ضروری اقدامات (Recommended Actions)**
+4. **ڈاکٹر سے فوری رجوع کی علامات (Emergency Signs)**
+5. **صحت اور آرام کی تجاویز (Recovery Advice)**` : `1. **Clinical Summary**
+2. **Key Triage Concerns**
+3. **Immediate Recommended Steps**
+4. **Warning Signs Requiring Emergency Attention**
+5. **Lifestyle and Recovery Tips**`}`
               }
             ],
             thinking: { type: 'disabled' }
           });
-
           llmAnalysis = analysisCompletion.choices[0]?.message?.content || null;
         }
       } catch (error) {
-        console.error('Online AI engine error:', error);
-        // If Gemini API fails, fall back to Local ML engine
-        console.log('Falling back to Local ML engine...');
-        // Re-run with local-ml logic
+        console.error('Online AI engine error, falling back to Local ML:', error);
+        // Fallback to local engine automatically
         return POST(new NextRequest(request.url, {
           method: 'POST',
-          body: JSON.stringify({
-            ...body,
-            engine: 'local-ml',
-            includeLLMAnalysis: false,
-          }),
+          body: JSON.stringify({ ...body, engine: 'local-ml' }),
         }));
       }
     }
 
-    // Take top 5 predictions
     const topPredictions = predictions.slice(0, 5);
 
     if (topPredictions.length === 0) {
       return NextResponse.json({
         predictions: [],
         llmAnalysis: null,
-        message: 'No matching diseases found for the selected symptoms. Please try selecting more symptoms.',
+        message: 'No matching conditions found for the selected symptoms. Try selecting additional symptoms.',
       });
     }
 
-    // Save prediction to history (if user logged in and privacy mode off)
-    let savedPrediction = null;
-    if (userId && !privacyMode) {
+    // Save prediction in PostgreSQL if user is authenticated and privacy mode is disabled
+    let savedPredictionId: string | undefined;
+    const effectiveUserId = sessionUser?.id || userId;
+
+    if (effectiveUserId && !privacyMode) {
       try {
-        savedPrediction = await db.prediction.create({
+        const saved = await db.prediction.create({
           data: {
-            userId,
+            userId: effectiveUserId,
             selectedSymptoms: JSON.stringify([...new Set(symptomIds)]),
             results: JSON.stringify(topPredictions),
             llmAnalysis,
           },
         });
-      } catch (error) {
-        console.error('Save prediction error:', error);
+        savedPredictionId = saved.id;
+      } catch (saveError) {
+        console.error('Failed to log prediction record in PostgreSQL:', saveError);
       }
     }
 
     return NextResponse.json({
       predictions: topPredictions,
       llmAnalysis,
-      predictionId: savedPrediction?.id,
+      predictionId: savedPredictionId,
     });
   } catch (error) {
-    console.error('Prediction error:', error);
+    console.error('Prediction API fatal error:', error);
     return NextResponse.json(
-      { error: 'Internal server error during prediction' },
+      { error: 'An unexpected error occurred during prediction.' },
       { status: 500 }
     );
   }

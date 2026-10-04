@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef } from 'react'
 import { useHydrated } from '@/components/hooks/use-hydrated'
+import { useAppStore } from '@/lib/store'
 import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -10,13 +11,13 @@ import { Mic, MicOff } from 'lucide-react'
 export function VoiceInputButton({ onResult }: { onResult: (text: string) => void }) {
   const [isListening, setIsListening] = useState(false)
   const mounted = useHydrated()
+  const { language } = useAppStore()
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
 
   const isSupported = useMemo(() => {
     if (typeof window === 'undefined') return false
-    const SpeechRecognition = (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition
-      || (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
-    return !!SpeechRecognition
+    const win = window as any
+    return !!(win.SpeechRecognition || win.webkitSpeechRecognition)
   }, [])
 
   const toggleListening = () => {
@@ -26,16 +27,23 @@ export function VoiceInputButton({ onResult }: { onResult: (text: string) => voi
       return
     }
 
-    const SpeechRecognition = (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition
-      || (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
+    const win = window as any
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition
 
     if (!SpeechRecognition) {
-      toast({ title: 'Not supported', description: 'Voice input is not supported in your browser', variant: 'destructive' })
+      toast({
+        title: language === 'ur' ? 'معاونت دستیاب نہیں' : 'Not supported',
+        description: language === 'ur'
+          ? 'آپ کے براؤزر میں وائس ان پٹ کی سہولت میسر نہیں ہے'
+          : 'Voice input is not supported in your browser (try Chrome/Edge)',
+        variant: 'destructive'
+      })
       return
     }
 
     const recognition = new SpeechRecognition()
-    recognition.lang = 'en-US'
+    // Adaptive language selection: ur-PK for Urdu/Bilingual modes, en-US for English
+    recognition.lang = language === 'ur' ? 'ur-PK' : (language === 'both' ? 'ur-PK' : 'en-US')
     recognition.interimResults = false
     recognition.maxAlternatives = 1
 
@@ -43,12 +51,21 @@ export function VoiceInputButton({ onResult }: { onResult: (text: string) => voi
       const transcript = event.results[0][0].transcript
       onResult(transcript)
       setIsListening(false)
-      toast({ title: 'Voice captured', description: `"${transcript}"` })
+      toast({
+        title: language === 'ur' ? 'آواز ریکارڈ ہو گئی' : 'Voice captured',
+        description: `"${transcript}"`
+      })
     }
 
     recognition.onerror = () => {
       setIsListening(false)
-      toast({ title: 'Voice error', description: 'Could not capture voice input. Please try again.', variant: 'destructive' })
+      toast({
+        title: language === 'ur' ? 'خرابی' : 'Voice error',
+        description: language === 'ur'
+          ? 'آواز ریکارڈ کرنے میں رکاوٹ۔ براہ کرم دوبارہ کوشش کریں'
+          : 'Could not capture voice input. Please check microphone permissions.',
+        variant: 'destructive'
+      })
     }
 
     recognition.onend = () => {
@@ -56,11 +73,19 @@ export function VoiceInputButton({ onResult }: { onResult: (text: string) => voi
     }
 
     recognitionRef.current = recognition
-    recognition.start()
-    setIsListening(true)
+    try {
+      recognition.start()
+      setIsListening(true)
+    } catch {
+      setIsListening(false)
+    }
   }
 
   if (!mounted || !isSupported) return null
+
+  const tooltipLabel = isListening
+    ? (language === 'ur' ? 'سن رہا ہے... روکنے کے لیے کلک کریں' : 'Listening... click to stop')
+    : (language === 'ur' ? 'آواز سے علامات تلاش کریں' : 'Voice search (speaks in English / اردو)')
 
   return (
     <TooltipProvider>
@@ -81,7 +106,7 @@ export function VoiceInputButton({ onResult }: { onResult: (text: string) => voi
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {isListening ? 'Listening... click to stop' : 'Voice search'}
+          {tooltipLabel}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
