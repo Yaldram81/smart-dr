@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Sparkles, Stethoscope, BookOpen, Users,
+  Sparkles, Stethoscope, BookOpen, User,
   Activity, ArrowRight, ShieldCheck, HelpCircle,
   FileText, HeartPulse
 } from 'lucide-react'
@@ -27,7 +27,7 @@ import { DiseaseBrowserSection } from '@/components/home/disease-browser-section
 import { BlogSection } from '@/components/home/blog-section'
 import { FAQSection } from '@/components/home/faq-section'
 
-// Tab 4: About, Team & Trust
+// Tab 4: About, Developer & Project
 import { AboutSection } from '@/components/home/about-section'
 import { DeveloperSection } from '@/components/home/developer-section'
 import { TestimonialsSection } from '@/components/home/testimonials-section'
@@ -66,9 +66,9 @@ const TABS: TabOption[] = [
   },
   {
     key: 'about',
-    label: 'About & Clinical Team',
-    sublabel: 'Mission, UOM IT Dept & Testimonials',
-    icon: Users,
+    label: 'About & Developer',
+    sublabel: 'Mission, University & Developer Info',
+    icon: User,
   },
 ]
 

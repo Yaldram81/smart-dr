@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Smart.Dr - AI-Powered Disease Prediction System",
   description: "Advanced symptom-based disease prediction powered by dual-engine AI. Get instant health insights by selecting your symptoms and receiving AI-analyzed disease predictions.",
   keywords: ["Smart.Dr", "AI", "disease prediction", "symptom checker", "health analysis", "medical AI", "dual-engine"],
-  authors: [{ name: "Smart.Dr Team" }],
+  authors: [{ name: "Tanzeel Ur Rahman" }],
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>",
   },

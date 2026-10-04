@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAppStore } from '@/lib/store'
 import { DownloadProjectButton } from '@/components/layout/download-project-button'
 import {
-  HeartPulse, Github, Twitter, Linkedin, Mail,
+  HeartPulse, Github, Linkedin, Mail,
   MapPin, Clock, Zap, ChevronRight, AlertTriangle, Shield,
   Stethoscope, BarChart3, MessageSquare, Phone
 } from 'lucide-react'
@@ -24,14 +24,13 @@ export function Footer() {
   const resourceLinks = [
     { label: 'Health Insights & Articles', href: '/#insights', icon: <Zap className="size-3.5" /> },
     { label: 'Frequently Asked Questions', href: '/#faq', icon: <ChevronRight className="size-3.5" /> },
-    { label: 'About & Medical Team', href: '/#about', icon: <ChevronRight className="size-3.5" /> },
+    { label: 'About & Developer', href: '/#about', icon: <ChevronRight className="size-3.5" /> },
   ]
 
   const socialLinks = [
-    { icon: <Github className="size-4" />, href: 'https://github.com', label: 'GitHub' },
-    { icon: <Twitter className="size-4" />, href: 'https://twitter.com', label: 'Twitter / X' },
-    { icon: <Linkedin className="size-4" />, href: 'https://linkedin.com', label: 'LinkedIn' },
-    { icon: <Mail className="size-4" />, href: 'mailto:support@smartdr.ai', label: 'Email' },
+    { icon: <Github className="size-4" />, href: 'https://github.com/Yaldram81', label: 'GitHub' },
+    { icon: <Linkedin className="size-4" />, href: 'https://www.linkedin.com/in/tanzeel-ur-rahman-71b7b2225/', label: 'LinkedIn' },
+    { icon: <Mail className="size-4" />, href: 'mailto:tanzeelyaldram3@gmail.com', label: 'Email' },
   ]
 
   return (
@@ -121,11 +120,11 @@ export function Footer() {
             </h4>
             <div className="space-y-3 text-sm text-muted-foreground">
               <a
-                href="mailto:support@smartdr.ai"
+                href="mailto:tanzeelyaldram3@gmail.com"
                 className="flex items-center gap-2.5 hover:text-primary transition-colors group"
               >
                 <Mail className="size-4 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-                <span>support@smartdr.ai</span>
+                <span>tanzeelyaldram3@gmail.com</span>
               </a>
               <div className="flex items-center gap-2.5">
                 <Phone className="size-4 shrink-0 opacity-60" />
@@ -171,7 +170,7 @@ export function Footer() {
         {/* Developer credits */}
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground/60">
-            Developed with ❤️ by <span className="font-medium text-muted-foreground/80">Smart.Dr Team</span> — Final Year Project, IT 8th Semester
+            Developed with ❤️ by <span className="font-medium text-muted-foreground/80">Tanzeel Ur Rahman</span> — Final Year Project, BCS 8th Semester
           </p>
         </div>
       </div>

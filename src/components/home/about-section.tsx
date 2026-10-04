@@ -92,7 +92,7 @@ export function AboutSection() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <GraduationCap className="size-5 text-primary" />
-                  Our Team
+                  Academic & Developer Info
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -125,26 +125,23 @@ export function AboutSection() {
                 <Separator />
 
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Developers</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Lead Developer</p>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-primary">BH</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <span className="text-xs font-bold text-primary">TR</span>
                       </div>
-                      <span className="text-sm">Bilal Hassan (1610)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-primary">HK</span>
+                      <div>
+                        <span className="text-sm font-semibold">Tanzeel Ur Rahman</span>
+                        <p className="text-[11px] text-muted-foreground">Lead Full-Stack & AI Systems Architect</p>
                       </div>
-                      <span className="text-sm">Haris Khan (1609)</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t">
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    This project is developed as a Final Year Project for the BS IT 8th Semester at the University of Malakand, 
+                    This project is developed as a Final Year Project for the BCS 8th Semester at the University of Malakand, 
                     Chakdara, Dir Lower, Khyber Pakhtunkhwa, Pakistan.
                   </p>
                 </div>

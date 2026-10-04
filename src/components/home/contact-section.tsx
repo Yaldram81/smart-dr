@@ -68,7 +68,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Email</p>
-                    <a href="mailto:support@smartdr.ai" className="text-sm text-primary hover:underline">support@smartdr.ai</a>
+                    <a href="mailto:tanzeelyaldram3@gmail.com" className="text-sm text-primary hover:underline">tanzeelyaldram3@gmail.com</a>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

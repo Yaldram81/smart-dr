@@ -22,7 +22,7 @@
 
 ## 📖 Executive Summary
 
-**Smart.Dr** is a state-of-the-art medical decision-support and disease prediction platform designed to bridge the accessibility gap in modern healthcare. Developed as a **Final Year Project (BS IT 8th Semester)** at the **Department of Computer Science & Information Technology, University of Malakand (UOM)**, Smart.Dr couples a high-speed **Local Machine Learning & Statistical Knowledge Engine** with an advanced **Online Generative AI Engine (Google Gemini 2.5 Flash)**.
+**Smart.Dr** is a state-of-the-art medical decision-support and disease prediction platform designed to bridge the accessibility gap in modern healthcare. Developed as a **Final Year Project (BCS 8th Semester)** at the **Department of Computer Science & Information Technology, University of Malakand (UOM)**, Smart.Dr couples a high-speed **Local Machine Learning & Statistical Knowledge Engine** with an advanced **Online Generative AI Engine (Google Gemini 2.5 Flash)**.
 
 The system evaluates user-reported symptoms across 187+ clinical manifestations, categorizing risk profiles against 42+ diseases, delivering multi-tiered recommendations (precautions, medications, nutritional guidance, and physical therapy/workout regimens), while guaranteeing zero PHI (Protected Health Information) retention when operating in Privacy Mode.
 
@@ -536,16 +536,18 @@ smart-dr/
 
 ## 🎓 Academic & Development Credits
 
-**Smart.Dr** was conceptualized, designed, and engineered as an undergraduate **Final Year Project** for the degree of **Bachelor of Science in Information Technology (BS IT - 8th Semester)**.
+**Smart.Dr** was conceptualized, designed, and engineered as an undergraduate **Final Year Project** for the degree of **Bachelor of Computer Science (BCS - 8th Semester)**.
 
 ### 🏛 Academic Institution
 - **Department**: Department of Computer Science & Information Technology
 - **University**: [University of Malakand (UOM)](https://uom.edu.pk/)
 - **Location**: Chakdara, Lower Dir, Khyber Pakhtunkhwa, Pakistan
 
-### 👨‍💻 Project Developers
-- **Bilal Hassan** — *Roll No: 1610* (Full-Stack Architecture & AI Integration)
-- **Haris Khan** — *Roll No: 1609* (Frontend Engineering & Database Design)
+### 👨‍💻 Project Developer
+- **Tanzeel Ur Rahman** (Lead Developer, Full-Stack Architecture & AI Integration)
+  - **GitHub**: [@Yaldram81](https://github.com/Yaldram81)
+  - **LinkedIn**: [Tanzeel Ur Rahman](https://www.linkedin.com/in/tanzeel-ur-rahman-71b7b2225/)
+  - **Email**: [tanzeelyaldram3@gmail.com](mailto:tanzeelyaldram3@gmail.com)
 
 ### 👨‍🏫 Project Supervisors
 - **Dr. Pervez Khan** — *Associate Professor / Project Supervisor*
