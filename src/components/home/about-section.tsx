@@ -109,15 +109,11 @@ export function AboutSection() {
                 <Separator />
 
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Supervisors</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Project Supervisor</p>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <UserCheck className="size-4 text-primary" />
-                      <span className="text-sm">Dr. Pervez Khan</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="size-4 text-primary" />
-                      <span className="text-sm">Dr. Fakhre Alam</span>
+                      <span className="text-sm font-medium">Dr. Fakhrud Din</span>
                     </div>
                   </div>
                 </div>

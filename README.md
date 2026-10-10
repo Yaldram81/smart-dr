@@ -195,7 +195,7 @@ Built as a modern tabbed multi-view interface:
 - **Tab 1: Overview & Triage**: Hero presentation, emergency quick actions (Chest Pain, FAST Stroke signs, Anaphylaxis), workflow steps, core feature breakdown, and daily health tips.
 - **Tab 2: Disease Directory**: Interactive accordion library of all **42+ clinical conditions**, organized by medical categories with bilingual Urdu disease summaries.
 - **Tab 3: Health Insights & FAQ**: Evidence-based medical articles, preventive health guides, and comprehensive patient triage FAQs.
-- **Tab 4: About & Developer**: Dedicated academic showcase for the University of Malakand, departmental supervisors, and the lead developer.
+- **Tab 4: About & Developer**: Dedicated academic showcase for the University of Malakand, project supervisor, and the lead developer.
 
 ### 2. 187+ Visual & Anatomical Symptom Checker
 - **Collapsible Organ Systems**: 187+ symptoms grouped into physiological categories (Integumentary, Respiratory, Cardiovascular, Upper Aerodigestive, Renal & Urinary, Neurological, etc.).
@@ -622,9 +622,8 @@ smart-dr/
   ✉️ <strong>Email</strong>: <a href="mailto:tanzeelyaldram3@gmail.com">tanzeelyaldram3@gmail.com</a>
 </p>
 
-### 👨‍🏫 Project Supervisors
-- **Dr. Pervez Khan** — *Associate Professor / Project Supervisor*
-- **Dr. Fakhre Alam** — *Assistant Professor / Co-Supervisor*
+### 👨‍🏫 Project Supervisor
+- **Dr. Fakhrud Din** — *Project Supervisor*
 
 ---
 
