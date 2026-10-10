@@ -1,219 +1,261 @@
 <p align="center">
-  <img src="public/logo.svg" alt="Smart.Dr Logo" width="100" height="100" />
+  <img src="public/logo.svg" alt="Smart.Dr Logo" width="110" height="110" />
 </p>
 
-<h1 align="center">🩺 Smart.Dr — AI-Powered Disease Prediction System</h1>
+<h1 align="center">🩺 Smart.Dr — Clinical Decision Support & Health Intelligence Platform</h1>
 
 <p align="center">
-  <strong>Dual-Engine Clinical Decision Support & Comprehensive Health Intelligence Platform</strong>
+  <strong>An advanced dual-engine clinical reasoning system, explainable symptom pattern matching, and bilingual healthcare intelligence platform engineered for web and clinical triage.</strong>
 </p>
 
 <p align="center">
-  <a href="#key-features"><img src="https://img.shields.io/badge/Dual--Engine-Local%20ML%20%2B%20Gemini%20AI-blue.svg?style=for-the-badge&logo=openai" alt="Dual Engine" /></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/Next.js-16.1%20(App%20Router)-black.svg?style=for-the-badge&logo=next.js" alt="Next.js 16" /></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/React-19.0-61DAFB.svg?style=for-the-badge&logo=react" alt="React 19" /></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?style=for-the-badge&logo=typescript" alt="TypeScript" /></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/TailwindCSS-v4.0-38B2AC.svg?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS 4" /></a>
-  <a href="#database-schema"><img src="https://img.shields.io/badge/Prisma%20ORM-PostgreSQL-336791.svg?style=for-the-badge&logo=postgresql" alt="Prisma PostgreSQL" /></a>
-  <a href="#multilingual-support"><img src="https://img.shields.io/badge/Language-English%20%7C%20اردو-success.svg?style=for-the-badge" alt="Urdu Support" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16.2.4%20(App%20Router)-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.0-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black" alt="React 19" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5" /></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-16.0-4169E1.svg?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" /></a>
+  <a href="https://www.prisma.io/"><img src="https://img.shields.io/badge/Prisma%20ORM-6.19-2D3748.svg?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma ORM" /></a>
+  <a href="https://deepmind.google/technologies/gemini/"><img src="https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4.svg?style=for-the-badge&logo=google&logoColor=white" alt="Google Gemini" /></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind%20CSS-v4.0-38B2AC.svg?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4" /></a>
+  <a href="#-multilingual--urdu-nastaleeq-engine"><img src="https://img.shields.io/badge/Language-English%20%7C%20اردو%20نستعلیق-10B981.svg?style=for-the-badge" alt="Bilingual Support" /></a>
 </p>
 
 ---
 
 ## 📖 Executive Summary
 
-**Smart.Dr** is a state-of-the-art medical decision-support and disease prediction platform designed to bridge the accessibility gap in modern healthcare. Developed as a **Final Year Project (BCS 8th Semester)** at the **Department of Computer Science & Information Technology, University of Malakand (UOM)**, Smart.Dr couples a high-speed **Local Machine Learning & Statistical Knowledge Engine** with an advanced **Online Generative AI Engine (Google Gemini 2.5 Flash)**.
+**Smart.Dr** is a state-of-the-art medical decision-support and disease prediction platform designed to bridge the accessibility and linguistic divide in healthcare triage. Developed as an undergraduate **Final Year Project (Bachelor of Computer Science — BCS 8th Semester)** at the **Department of Computer Science & Information Technology, University of Malakand (UOM)**, Smart.Dr synthesizes classical clinical taxonomy with modern artificial intelligence.
 
-The system evaluates user-reported symptoms across 187+ clinical manifestations, categorizing risk profiles against 42+ diseases, delivering multi-tiered recommendations (precautions, medications, nutritional guidance, and physical therapy/workout regimens), while guaranteeing zero PHI (Protected Health Information) retention when operating in Privacy Mode.
+Rather than relying on uninterpretable black-box predictions, Smart.Dr couples a deterministic, mathematically grounded **Local Similarity Inference Engine** with an **Online Generative AI Engine (Google Gemini 2.5 Flash)**. It features an **Explainability Layer** that breaks down reported hallmark indicators versus expected absent symptoms, providing auditable and scientifically defensible health intelligence in both **English** and **Urdu (Jameel Noori Nastaleeq)**.
 
 ---
 
 ## 📑 Table of Contents
 
-- [Key Features](#-key-features)
-- [System Architecture](#-system-architecture)
-- [Dual-Engine Prediction Mechanism](#-dual-engine-prediction-mechanism)
-- [Module Breakdown](#-module-breakdown)
-  - [1. Symptom Checker & Anatomical Body Map](#1-symptom-checker--anatomical-body-map)
-  - [2. Clinical Prediction Results & PDF Rx Generation](#2-clinical-prediction-results--pdf-rx-generation)
-  - [3. Comprehensive Health Dashboard](#3-comprehensive-health-dashboard)
-  - [4. AI Health Chatbot (24/7 Assistant)](#4-ai-health-chatbot-247-assistant)
-  - [5. Disease Knowledge Browser & Emergency Triage](#5-disease-knowledge-browser--emergency-triage)
-- [Multilingual & Urdu Nastaleeq Support](#-multilingual--urdu-nastaleeq-support)
+- [Key Architecture Highlights](#-key-architecture-highlights)
+- [System Architecture & Data Flow](#-system-architecture--data-flow)
+- [Dual-Engine Inference Mechanism](#-dual-engine-inference-mechanism)
+  - [1. Engine A: Local Clinical Similarity Inference Engine](#1-engine-a-local-clinical-similarity-inference-engine)
+  - [2. Engine B: Online Generative AI Engine (Gemini 2.5 Flash)](#2-engine-b-online-generative-ai-engine-gemini-25-flash)
+- [Explainability & Diagnostic Transparency Layer](#-explainability--diagnostic-transparency-layer)
+- [Core Application Modules](#-core-application-modules)
+  - [1. Multi-Tab Educational Homepage](#1-multi-tab-educational-homepage)
+  - [2. 187+ Visual & Anatomical Symptom Checker](#2-187-visual--anatomical-symptom-checker)
+  - [3. Clinical Results & Rx Report Generator](#3-clinical-results--rx-report-generator)
+  - [4. Personal Health Analytics Dashboard](#4-personal-health-analytics-dashboard)
+  - [5. 24/7 Context-Aware AI Health Assistant](#5-247-context-aware-ai-health-assistant)
+- [Educational Pharmacotherapy & Clinical Safety](#-educational-pharmacotherapy--clinical-safety)
+- [Multilingual & Urdu Nastaleeq Engine](#-multilingual--urdu-nastaleeq-engine)
 - [Technology Stack](#-technology-stack)
-- [Database Schema (Prisma ORM)](#-database-schema-prisma-orm)
-- [API Reference](#-api-reference)
+- [Database Schema (Prisma & PostgreSQL)](#-database-schema-prisma--postgresql)
+- [REST API Reference](#-rest-api-reference)
 - [Installation & Getting Started](#-installation--getting-started)
 - [Environment Configuration](#-environment-configuration)
-- [Deployment & Reverse Proxy Setup](#-deployment--reverse-proxy-setup)
-- [Project Directory Structure](#-project-directory-structure)
-- [Academic & Development Credits](#-academic--development-credits)
-- [Medical & Legal Disclaimer](#-medical--legal-disclaimer)
+- [Production Deployment & Caddy Reverse Proxy](#-production-deployment--caddy-reverse-proxy)
+- [Project Directory Layout](#-project-directory-layout)
+- [Academic & Developer Credits](#-academic--developer-credits)
+- [Medical & Ethical Disclaimer](#-medical--ethical-disclaimer)
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Architecture Highlights
 
-### 🩺 Diagnostic & Clinical Decision Support
-- **Dual-Engine Prediction**:
-  - **Local ML / Dataset Engine**: Real-time weighted symptom matching across 42+ diseases and 187+ symptoms, with optional Support Vector Classifier (SVC) integration.
-  - **Online AI Engine (Google Gemini 2.5 Flash)**: Generative clinical analysis delivering 6-dimensional structured outputs (Disease, Description, Precautions, Medications, Diet, Workout).
-- **3D & 2D Interactive Human Anatomy Model**: Real-time 3D WebGL anatomical mannequin built with Three.js featuring 360° orbit rotation, cardiac pulsation, pulmonary breathing kinetics, layer toggles (Organs, Skeletal, Skin), and raycast selection mapping directly to symptom categories. Seamlessly toggleable with the 2D diagram.
-- **Drug Interaction Checker**: Clinical pharmacology cross-referencing engine detecting high-risk contraindications and polypharmacy risks across up to 6 concurrent medications.
-- **Voice-Assisted Symptom Logging**: Hands-free voice recognition powered by Web Speech API with adaptive `ur-PK` (Pakistani Urdu) and `en-US` speech recognition.
-- **Emergency Triage & Red-Flag Detection**: Automatic warning alerts for high-risk cardiac, neurological (FAST stroke signs), and respiratory emergencies with direct emergency helpline access.
-- **Clinical Prescription Sheets**: One-click generation of browser-printable and PDF prescriptions formatted with physician-grade disclaimers and dosage warnings.
+### 🔬 Scientific & Clinical Defensibility
+- **Symptom Pattern Similarity Index**: Replaces scientifically misleading "ML certainty" percentages with a weighted pattern similarity metric calibrated between reported symptoms and established clinical profiles.
+- **Diagnostic Explainability**: Breaks down each prediction into:
+  - **Contributing Diagnostic Indicators**: Highlights reported symptoms with explicit importance badges (`HALLMARK`, `COMMON`, `OCCASIONAL`) and mathematical contribution percentages.
+  - **Negative Evidence (Absent Hallmarks)**: Discloses pathognomonic symptoms expected for the disease that were *not* reported by the user, providing critical conversational context for doctors.
+- **Controlled Clinical Enums**: Strong typing via Prisma enums (`Severity`: `MILD`, `MODERATE`, `SEVERE`, `CRITICAL`; `SymptomImportance`: `HALLMARK`, `COMMON`, `OCCASIONAL`).
+- **Pharmacotherapy Reframing**: Replaces unvetted prescription directives with evidence-based educational references, complete with contraindication warnings (e.g., NSAID prohibition in Dengue).
 
-### 📊 Holistic Health Tracking & Dashboard
-- **BMI (Body Mass Index) Calculator**: Dual metric/imperial calculation with real-time WHO classification and target weight advice.
-- **Health Assessment & Vitality Scoring**: Proprietary wellness scoring algorithm tracking lifestyle habits, symptom frequency, and recovery velocity.
-- **Medication Scheduler & Alarms**: Persistent dosage reminders with audible notification triggers.
-- **Hydration Tracker**: Interactive daily water intake logging with cup-by-cup visual progress.
-- **Symptom Duration Tracking**: Timeline monitoring of symptom onset, intensity spikes, and persistence.
-- **Recharts Visualizations**: Interactive graphical breakdowns of disease severity distributions and symptom trends.
-
-### 🌐 Inclusivity, Privacy & Accessibility
-- **Trilingual Interface**: Seamless switching between **English**, **Urdu (اردو)**, and **Bilingual (Urdu + English)** modes with custom Jameel Noori Nastaleeq typography.
-- **Zero-PHI Privacy Mode**: Client-configurable toggle ensuring zero retention of symptoms or medical queries in persistent storage.
-- **Adaptive UI**: Dark and Light theme modes powered by `next-themes`, glassmorphism aesthetics, responsive mobile-first layouts, and smooth `framer-motion` page transitions.
+### ⚡ Technical Highlights
+- **Modern Next.js 16 App Router**: Server and Client Components built with Next.js 16 and Turbopack for sub-second hot reloading.
+- **187+ Visual Symptoms Across Organ Systems**: Categorized across 10 physiological body systems (Cardiovascular, Respiratory, Digestive, Integumentary, Renal & Urinary, Neurological, Musculoskeletal, Endocrine, Sensory, and General).
+- **Educational Hover/Click Popups**: Each symptom card features a rich popup explaining medical definitions in English and Urdu, backed by native PostgreSQL aliases (`alternateNames`).
+- **Real-Time Docked Consultation Tray**: Dedicated sticky tray tracking selected symptoms, intensity, and duration with instant clearing and submission.
+- **Zero-PHI Privacy Mode**: Allows patients to execute ephemeral predictions without logging queries or demographic information to persistent storage.
 
 ---
 
-## 🏗 System Architecture
-
-```
-                          ┌───────────────────────────────────────────────┐
-                          │                User Client                    │
-                          │   (Desktop / Tablet / Mobile Web Browser)     │
-                          └──────────────────────┬────────────────────────┘
-                                                 │
-                                                 ▼
-                          ┌───────────────────────────────────────────────┐
-                          │         Next.js 16 Multi-Page Architecture    │
-                          │   • Native App Router MPA • Deep-Link Routing │
-                          │   • / • /checker • /results • /dashboard      │
-                          │   • 3D Anatomy Model      • Voice Recognition │
-                          │   • Framer Motion UI      • Nastaleeq Fonts   │
-                          └──────────────────────┬────────────────────────┘
-                                                 │ HTTP / JSON API
-                                                 ▼
-                          ┌───────────────────────────────────────────────┐
-                          │             Next.js API Layer                 │
-                          │   • /api/predict         • /api/chat          │
-                          │   • /api/symptoms        • /api/history       │
-                          │   • /api/stats           • /api/auth/*        │
-                          │   • /api/interactions                         │
-                          └───────┬───────────────────────────────┬───────┘
-                                  │                               │
-            ┌─────────────────────┴────────────┐   ┌──────────────┴────────────────────┐
-            ▼                                  ▼   ▼                                   ▼
-┌───────────────────────────┐      ┌─────────────────────────┐     ┌─────────────────────────┐
-│     Engine 1: Local ML    │      │    Engine 2: Online AI  │     │   Database & Storage    │
-│  • Weighted Symptom Matrix│      │  • Google Gemini 2.5    │     │  • PostgreSQL via Prisma│
-│  • In-Process Classifier  │      │  • 6-Key JSON Schema    │     │  • User Profiles        │
-│  • Sub-5ms Execution      │      │  • Differential Analysis│     │  • Prediction History   │
-│  • 187 Symptoms/42 Cond   │      │  • Bilingual Urdu/Eng   │     │  • High-Perf Indexes    │
-└───────────────────────────┘      └─────────────────────────┘     └─────────────────────────┘
-```
-
----
-
-## ⚡ Dual-Engine Prediction Mechanism
-
-Smart.Dr provides a unique hybrid architectural paradigm that guarantees diagnostic assistance regardless of internet connectivity:
+## 🏗 System Architecture & Data Flow
 
 ```mermaid
 flowchart TD
-    A[User Selects Symptoms] --> B{Engine Selection}
-    B -->|Local ML Engine| C[Query Prisma SQLite Weighted Matrix]
-    C --> D[Attempt Python SVC Model @ localhost:3031]
-    D -->|SVC Available| E[Blend SVC Score 40% + Dataset Matrix 60%]
-    D -->|SVC Offline| F[Deterministic Weighted Dataset Scoring]
-    E --> G[Extract Curated Precaution/Med/Diet/Workout]
-    F --> G
-    B -->|Online AI Engine| H[Invoke Google Gemini 2.5 Flash]
-    H --> I[Parse Structured 6-Key Clinical JSON Schema]
-    I --> J[Enrich with Database Specialist & Severity Records]
-    J --> K[Generate Detailed LLM Differential Consultation]
-    G --> L[Rank Top 5 Conditions by Confidence %]
-    K --> L
-    L --> M[Render Clinical Output Screen]
+    subgraph Client ["Client Presentation Tier (Browser)"]
+        UI[Next.js 16 Multi-Page Interface]
+        Tab1[Tab 1: Overview & Triage]
+        Tab2[Tab 2: Disease Directory]
+        Tab3[Tab 3: Insights & FAQ]
+        Tab4[Tab 4: About & Developer]
+        SC[Symptom Checker & Consultation Tray]
+        Lang[Urdu Nastaleeq / English Engine]
+    end
+
+    subgraph API ["Next.js Server API Routes"]
+        P_API["/api/predict"]
+        C_API["/api/chat"]
+        S_API["/api/symptoms"]
+        H_API["/api/history"]
+        A_API["/api/auth/*"]
+    end
+
+    subgraph Engines ["Dual-Engine Clinical Processing"]
+        direction TB
+        subgraph LocalEngine ["Engine A: Local Similarity Inference"]
+            Weights["Weighted Association Matrix"]
+            Mult["Importance Multipliers (Hallmark 1.5x / Common 1.0x / Occasional 0.6x)"]
+            ExpCalc["Explainability & Absent Hallmark Evaluator"]
+        end
+        subgraph OnlineEngine ["Engine B: Online Generative AI"]
+            Gemini["Google Gemini 2.5 Flash"]
+            SchemaPrompt["6-Dimension Clinical JSON Schema"]
+            DiffGen["Bilingual Differential Consultation"]
+        end
+    end
+
+    subgraph DB ["Data Persistence Tier (PostgreSQL)"]
+        Prisma["Prisma ORM 6.19"]
+        T_Sym["Symptom (Aliases, Slug, Body System)"]
+        T_Dis["Disease (Severity Enum, Treatment, Warnings)"]
+        T_DS["DiseaseSymptom (AssociationScore, Importance Enum)"]
+        T_Pred["Prediction (Audit: EngineType, Version, Model)"]
+        T_User["User (Auth, Profile, Demographics)"]
+    end
+
+    UI --> SC
+    SC --> P_API
+    P_API -->|Engine Selection: local-ml| LocalEngine
+    P_API -->|Engine Selection: online-ai| OnlineEngine
+    LocalEngine --> Prisma
+    OnlineEngine --> Gemini
+    Gemini -.->|Fallback on Quota/Network| LocalEngine
+    Prisma --> DB
+    P_API --> UI
 ```
 
-### 1. Local ML Engine (SVC & Weighted Dataset)
-- Evaluates the overlap and mathematical weights of chosen symptoms against disease profiles:
-  $$\text{Score}(D) = \frac{\sum_{s \in S_{\text{selected}} \cap S_D} W(s, D)}{\sum_{s \in S_D} W(s, D)}$$
-- If the companion Python Support Vector Machine (SVC) microservice is running, predictions are blended using a **60/40 weighted heuristic** between dataset confidence and SVC hyper-plane probability.
-- Operates entirely offline with near-zero latency.
+---
 
-### 2. Online AI Engine (Google Gemini 2.5 Flash)
-- Sends prompt directives enforcing strict JSON output compliance with 6 clinical parameters:
-  1. `disease`: Clinical name of the predicted condition.
-  2. `description`: Pathophysiological summary.
-  3. `precautions`: Preventative, hygiene, and emergency containment measures.
-  4. `medications`: Evidence-supported pharmacological guidance with clinical cautions.
-  5. `diets`: Nutritional regimens (e.g. DASH, BRAT, anti-inflammatory).
-  6. `workouts`: Physical therapy, low-impact exercise, or bed-rest directives.
-- Provides fallback to the Local Engine automatically should API quotas or internet connections fail.
+## ⚡ Dual-Engine Inference Mechanism
+
+Smart.Dr provides a hybrid architecture guaranteeing diagnostic triage support regardless of server load or internet connectivity.
+
+### 1. Engine A: Local Clinical Similarity Inference Engine
+Operates completely in-process within the PostgreSQL database layer, executing in **< 15 milliseconds**:
+- **Weighted Profile Evaluation**: Each disease profile comprises associated symptoms linked through `DiseaseSymptom`, carrying an `associationScore` (0.0 to 1.0) and clinical importance level (`HALLMARK`, `COMMON`, `OCCASIONAL`).
+- **Mathematical Formula**:
+  $$\text{Similarity Score} = \left(\frac{\sum_{s \in S_{\text{selected}} \cap S_D} \text{associationScore}(s, D) \times M(s)}{\sum_{s \in S_D} \text{associationScore}(s, D) \times M(s)}\right) \times 100$$
+  Where multiplier $M(s)$ is:
+  - $\mathbf{1.5 \times}$ for **HALLMARK** (pathognomonic/defining indicators)
+  - $\mathbf{1.0 \times}$ for **COMMON** (frequently presenting manifestations)
+  - $\mathbf{0.6 \times}$ for **OCCASIONAL** (secondary or variable indicators)
+- **Zero Latency & Offline Integrity**: Requires no external API calls, making it resilient for rural clinic environments.
+
+### 2. Engine B: Online Generative AI Engine (Gemini 2.5 Flash)
+Leverages Google's latest multimodal LLM tuned with a specialized healthcare triage prompt:
+- **Demographic Contextualization**: Integrates patient age, biological sex, pregnancy status, and symptom duration to fine-tune differentials.
+- **Structured 6-Dimension Output**: Enforces strict JSON schema generation across 6 clinical dimensions:
+  1. `disease`: Standard medical taxonomy.
+  2. `description`: Pathophysiological explanation in patient-friendly terms.
+  3. `precautions`: Hygiene, containment, and home recovery measures.
+  4. `medications`: Educational pharmacotherapy with physician-approval safeguards.
+  5. `diet`: Evidence-based nutritional protocols (e.g., DASH, hydration electrolytes, anti-inflammatory).
+  6. `workout`: Convalescent rest guidelines, physical therapy, and respiratory exercises.
+- **Graceful Automatic Fallback**: If network limits or API quotas are reached, the system automatically falls back to Engine A without interrupting user flow.
 
 ---
 
-## 🧩 Module Breakdown
+## 🔍 Explainability & Diagnostic Transparency Layer
 
-### 1. Symptom Checker & Anatomical Body Map
-- **Anatomical Body Map**: Interactive SVG/Canvas selector allowing users to click human body regions (Head, Chest, Abdomen, Upper Limbs, Lower Limbs, Systemic) to automatically isolate relevant symptoms.
-- **Categorical Accordions**: 187+ symptoms grouped across 10 distinct organ systems:
-  - *Cardiovascular, Respiratory, Digestive, Neurological, Musculoskeletal, Skin, Eyes, ENT, Endocrine, Psychological/General*.
-- **Live Search & Multilingual Matching**: Instant search across English symptom names and authentic Urdu terminology (e.g. typing "سینے میں درد" or "Chest Pain" simultaneously isolates the exact vector).
-- **Voice Recognition**: Web Speech API integration with microphone capture, speech-to-text decoding, and instant symptom auto-tagging.
+Standard symptom checkers output a single percentage without explaining the underlying reasoning. Smart.Dr introduces a **two-way explainability breakdown**:
 
-### 2. Clinical Prediction Results & PDF Rx Generation
-- **Dynamic Confidence Meter**: Visual probability score calibrated between 15% and 98%.
-- **Severity Classification**: Color-coded badges indicating `Mild` (Green), `Moderate` (Amber), `Severe` (Red), and `Critical` (Rose).
-- **Specialist Referral Engine**: Maps predicted diagnoses to appropriate medical specialists (e.g. *Pulmonologist, Neurologist, Cardiologist, Gastroenterologist, Dermatologist, Rheumatologist*).
-- **Comprehensive 4-Pillar Action Plan**:
-  1. 🛡️ **Precautions**: Infection control, posture, environmental precautions.
-  2. 💊 **Medications**: Pharmacotherapy reference with dosage warnings.
-  3. 🥗 **Dietary Advice**: Foods to consume, foods to strictly avoid.
-  4. 🏃 **Exercise & Rest**: Safe physical activity levels and convalescent rest periods.
-- **Physician-Grade Prescription Sheet**: Built-in HTML print formatter and integration with ReportLab for downloadable, official PDF prescriptions.
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Bronchitis — 82% Symptom Pattern Similarity                           │
+│ Severity: MODERATE | Specialist: Pulmonologist                         │
+├────────────────────────────────────────────────────────────────────────┤
+│ 🩺 CONTRIBUTING DIAGNOSTIC INDICATORS (Reported):                      │
+│   • Persistent Cough       [HALLMARK]    +38% Contribution             │
+│   • Chest Discomfort       [COMMON]      +24% Contribution             │
+│   • Fatigue                [COMMON]      +20% Contribution             │
+├────────────────────────────────────────────────────────────────────────┤
+│ ⚠️ EXPECTED HALLMARK SYMPTOMS NOT REPORTED (Negative Evidence):         │
+│   • Mucus / Sputum Production  [HALLMARK - Expected in typical Bronchitis]│
+│   • Low-grade Wheezing         [COMMON - Often accompanies acute cases] │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-### 3. Comprehensive Health Dashboard
-- **User Authentication**: Secure multi-user login and registration powered by `bcryptjs` password hashing.
-- **Profile Card**: Displays age, gender, and blood group for clinical context.
-- **BMI Calculator**: Interactive height (cm/ft) and weight (kg/lbs) calculator calculating Body Mass Index and displaying healthy weight ranges.
-- **Health Assessment & Score Timeline**: Calculates composite vitality scores based on health behaviors and visualizes historical health progression.
-- **Medication Reminders**: Dosage scheduler with interactive checklists, interval timers, and desktop notifications.
-- **Hydration Tracker**: Target water consumption counter (glasses/milliliters) with visual water level animation.
-- **Symptom Duration Tracker**: Logs how many days/weeks a symptom has persisted to help healthcare providers gauge chronicity.
-- **Prediction History Management**: Inspect past consultations, review AI analyses, or delete historical records.
-
-### 4. AI Health Chatbot (24/7 Assistant)
-- Persistent floating chatbot widget available across the entire platform.
-- Powered by Google Gemini with a healthcare-tuned system prompt emphasizing triage, symptom explanation, first-aid measures, and clinical disclaimers.
-- Retains multi-turn conversational context during active sessions.
-
-### 5. Disease Knowledge Browser & Emergency Triage
-- **Medical Encyclopedia**: Searchable and filterable reference library detailing all 42+ preloaded conditions.
-- **Emergency Quick Actions**: Rapid reference cards for critical medical events:
-  - Acute Chest Pain / Myocardial Infarction
-  - Stroke (FAST Protocol: Face, Arms, Speech, Time)
-  - Severe Anaphylaxis & Respiratory Arrest
-  - Uncontrolled Hemorrhage & Traumatic Injury
-- Direct emergency contact buttons for quick helpline access.
+1. **Diagnostic Indicators**: Reassures the clinician and patient regarding *why* this disease ranked high by exposing exact feature contributions.
+2. **Negative Evidence**: Discloses what expected classic hallmarks were *absent*, preventing hypochondria and alerting the clinician to investigate alternative diagnoses.
 
 ---
 
-## 🌐 Multilingual & Urdu Nastaleeq Support
+## 🧩 Core Application Modules
 
-Smart.Dr is specifically optimized for healthcare delivery in Pakistan and South Asian regions. The application includes deep localization:
+### 1. Multi-Tab Educational Homepage
+Built as a modern tabbed multi-view interface:
+- **Tab 1: Overview & Triage**: Hero presentation, emergency quick actions (Chest Pain, FAST Stroke signs, Anaphylaxis), workflow steps, core feature breakdown, and daily health tips.
+- **Tab 2: Disease Directory**: Interactive accordion library of all **42+ clinical conditions**, organized by medical categories with bilingual Urdu disease summaries.
+- **Tab 3: Health Insights & FAQ**: Evidence-based medical articles, preventive health guides, and comprehensive patient triage FAQs.
+- **Tab 4: About & Developer**: Dedicated academic showcase for the University of Malakand, departmental supervisors, and the lead developer.
 
-- **Urdu Medical Dictionary (`urdu-translations.ts`)**: 187+ medically verified Urdu symptom translations, 42+ disease translations, category headers, and complete UI strings.
-- **Typography Excellence**: Bundles the authentic **Jameel Noori Nastaleeq** font (`/public/fonts/JameelNooriNastaleeq.ttf`) via CSS `@font-face` rules, complemented with Google's **Noto Nastaliq Urdu** web font fallback.
-- **3 Dynamic Display Modes**:
-  1. **English Mode (`en`)**: Standard international medical nomenclature.
-  2. **Urdu Mode (`ur`)**: Full Nastaleeq typography with RTL-compatible formatting.
-  3. **Bilingual Mode (`both`)**: Displays English terms accompanied by parenthetical Urdu translations (e.g. `High Fever (تیز بخار)`).
+### 2. 187+ Visual & Anatomical Symptom Checker
+- **Collapsible Organ Systems**: 187+ symptoms grouped into physiological categories (Integumentary, Respiratory, Cardiovascular, Upper Aerodigestive, Renal & Urinary, Neurological, etc.).
+- **Educational Hover/Click Popups**: Hovering or tapping any symptom reveals an educational card with clinical definitions, alternative names (aliases), and Urdu terminology.
+- **Search & Synonyms**: Full-text search across English names, Urdu names, and medical aliases (e.g., searching *"Cephalalgia"* isolates *"Headache"*).
+- **Docked Consultation Tray**: A fixed, scrollable right-hand tray allowing users to inspect their selected symptoms, set severity/duration, and choose their inference engine.
+
+### 3. Clinical Results & Rx Report Generator
+- **Radial Similarity Gauge**: Displays calculated similarity with transparent explanation tags.
+- **Contraindications Panel**: Real-time cross-referencing against high-risk pharmacological pairs (e.g., Dengue + Aspirin warning).
+- **One-Click Clinical PDF**: Generates a clean, browser-printable prescription report formatted with institutional headers, disclaimer stamps, and physician sign-off boxes.
+
+### 4. Personal Health Analytics Dashboard
+- **BMI Calculator**: Real-time metric/imperial Body Mass Index with WHO categorization.
+- **Vitality Score Tracker**: Composite health score tracking lifestyle inputs and recovery trajectory.
+- **Medication Reminders**: Interactive dosage checklists with audio notifications and interval timers.
+- **Daily Hydration Tracker**: Cup-by-cup visual water intake tracker.
+- **Symptom Duration Timeline**: Chronicity monitor tracking days and weeks of persistent symptoms.
+
+### 5. 24/7 Context-Aware AI Health Assistant
+- Floating persistent health assistant powered by Google Gemini 2.5 Flash.
+- Adheres to clinical safety boundaries: clarifies symptoms, explains terminology, advises on first-aid, and guides users to emergency care when red flags arise.
+
+---
+
+## 💊 Educational Pharmacotherapy & Clinical Safety
+
+To ensure patient safety and ethical compliance, Smart.Dr adheres to strict pharmacological guidelines:
+
+| Feature | Clinical Implementation |
+| :--- | :--- |
+| **Prescription Guard** | All medications are labeled as **"Educational Reference (Physician Verification Required)"**. No dosage is issued without professional clinical evaluation. |
+| **Contraindications Matrix** | High-risk disease-medication contraindications are automatically flagged (e.g., *Dengue Fever*: NSAIDs such as Ibuprofen and Aspirin are strictly flagged due to hemorrhage risk; *Peptic Ulcer*: Corticosteroids and NSAIDs are prohibited). |
+| **Emergency Red Flags** | Immediate emergency alerts display for life-threatening conditions (e.g., Acute Myocardial Infarction, Stroke, Anaphylaxis) alongside direct emergency contact options. |
+| **Prediction Auditability** | Each record stores `engineType` (e.g., `similarity-inference`), `algorithmVersion` (e.g., `v2.1-weighted-profile`), and `modelVersion` (e.g., `gemini-2.5-flash`) for scientific auditability. |
+
+---
+
+## 🌐 Multilingual & Urdu Nastaleeq Engine
+
+Smart.Dr is specifically optimized for bilingual healthcare delivery across Pakistan and South Asia:
+
+```text
+               ┌─────────────────────────────────────┐
+               │         Language Selector           │
+               │   [English]  |  [اردو]  |  [Both]   │
+               └──────────────────┬──────────────────┘
+                                  │
+         ┌────────────────────────┼────────────────────────┐
+         ▼                        ▼                        ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   English Mode   │    │    Urdu Mode     │    │  Bilingual Mode  │
+│ International    │    │ Full Nastaleeq   │    │ High Fever       │
+│ Medical Terms    │    │ Jameel Noori Font│    │ (تیز بخار)       │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+```
+
+- **Urdu Medical Dictionary (`urdu-translations.ts`)**: 187+ clinically verified symptom translations, 42+ disease descriptions, organ categories, and full UI strings.
+- **Jameel Noori Nastaleeq**: Loaded locally via CSS `@font-face` (`/public/fonts/JameelNooriNastaleeq.ttf`) with Google's **Noto Nastaliq Urdu** web font fallback.
+- **Directional Support**: Automatically sets RTL/LTR alignment based on active language selection.
 
 ---
 
@@ -221,22 +263,22 @@ Smart.Dr is specifically optimized for healthcare delivery in Pakistan and South
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend Framework** | [Next.js 16.1.1](https://nextjs.org/) (App Router, Server Components & Client Components) |
-| **Language & Runtime** | [TypeScript 5](https://www.typescriptlang.org/), [React 19](https://react.dev/), [Bun](https://bun.sh/) / [Node.js](https://nodejs.org/) |
+| **Framework** | [Next.js 16.2.4](https://nextjs.org/) (App Router, Turbopack, Server Actions) |
+| **UI Library** | [React 19](https://react.dev/), [TypeScript 5](https://www.typescriptlang.org/) |
 | **Styling & Design** | [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), [Radix UI Primitives](https://www.radix-ui.com/) |
-| **Animations & UI** | [Framer Motion 12](https://www.framer.com/motion/), [Lucide React Icons](https://lucide.dev/) |
+| **Animations & Motion** | [Framer Motion 12](https://www.framer.com/motion/), [Lucide React Icons](https://lucide.dev/) |
+| **State Management** | [Zustand 5](https://github.com/pmndrs/zustand) (Client-side persistence with LocalStorage hydration) |
 | **Data Visualization** | [Recharts 2.15](https://recharts.org/) |
-| **State Management** | [Zustand 5](https://github.com/pmndrs/zustand) (with LocalStorage hydration) |
-| **Database & ORM** | [SQLite](https://www.sqlite.org/), [Prisma ORM 6.11](https://www.prisma.io/) |
+| **Database & ORM** | [PostgreSQL 16](https://www.postgresql.org/), [Prisma ORM 6.19](https://www.prisma.io/) |
 | **Artificial Intelligence** | [Google Gemini 2.5 Flash](https://deepmind.google/technologies/gemini/) via `z-ai-web-dev-sdk` |
-| **Machine Learning** | Python 3 Support Vector Classifier (SVC) Microservice (Optional, Port 3031) |
-| **Security & Auth** | [bcryptjs](https://www.npmjs.com/package/bcryptjs), Custom API Session Guard |
-| **PDF Generation** | HTML5 Print API + ReportLab Python Microservice Integration |
-| **Web Server & Proxy** | [Caddy 2](https://caddyserver.com/) Reverse Proxy (Port 81) |
+| **Security & Auth** | [bcryptjs](https://www.npmjs.com/package/bcryptjs), HTTP-Only Cookies, Session Guards |
+| **Reverse Proxy** | [Caddy 2](https://caddyserver.com/) (Automated SSL/TLS, port redirection) |
 
 ---
 
-## 🗄 Database Schema (Prisma ORM)
+## 🗄 Database Schema (Prisma & PostgreSQL)
+
+Smart.Dr uses a PostgreSQL schema designed for clinical explainability, reproducible inferences, and rich symptom metadata:
 
 ```prisma
 datasource db {
@@ -244,78 +286,119 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  name         String
-  password     String
-  age          Int?
-  gender       String?
-  bloodGroup   String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  predictions  Prediction[]
+generator client {
+  provider = "prisma-client-js"
 }
 
-model Disease {
-  id           String           @id @default(cuid())
-  name         String           @unique
-  description  String
-  specialist   String
-  severity     String
-  precautions  String           // JSON stringified array
-  medications  String           // JSON stringified array
-  diet         String           // JSON stringified array
-  workout      String?          // JSON stringified array
-  symptoms     DiseaseSymptom[]
-  createdAt    DateTime         @default(now())
+enum Severity {
+  MILD
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+enum SymptomImportance {
+  HALLMARK
+  COMMON
+  OCCASIONAL
 }
 
 model Symptom {
-  id           String           @id @default(cuid())
-  name         String           @unique
-  category     String
-  description  String?
-  diseases     DiseaseSymptom[]
-  createdAt    DateTime         @default(now())
+  id              String           @id @default(cuid())
+  name            String           @unique
+  slug            String           @unique
+  category        String
+  description     String?
+  imageUrl        String?
+  alternateNames  String[]         // Clinical aliases & synonyms (PostgreSQL array)
+  bodySystem      String?          // e.g. "Cardiovascular", "Renal & Urinary"
+  isActive        Boolean          @default(true)
+
+  diseaseLinks    DiseaseSymptom[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([category])
+  @@index([bodySystem])
+}
+
+model Disease {
+  id                String           @id @default(cuid())
+  name              String           @unique
+  slug              String           @unique
+  description       String
+  category          String           @default("General")
+  specialist        String
+  severity          Severity         @default(MODERATE)
+  treatmentOverview String?          // Educational management overview
+  emergencyWarnings String?          // JSON array of red-flag symptoms
+  precautions       String           // JSON stringified array
+  medications       String           // JSON stringified array (educational reference)
+  diet              String           // JSON stringified array
+  workout           String?          // JSON stringified array
+
+  symptoms          DiseaseSymptom[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([category])
+  @@index([severity])
 }
 
 model DiseaseSymptom {
-  id         String  @id @default(cuid())
-  diseaseId  String
-  symptomId  String
-  weight     Float   @default(1.0)
-  disease    Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
-  symptom    Symptom @relation(fields: [symptomId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  diseaseId         String
+  symptomId         String
+
+  associationScore  Float             @default(0.5) // Clinical similarity weight (0.0 - 1.0)
+  importance        SymptomImportance @default(COMMON)
+  evidenceLevel     String?           // e.g. "Clinical Guideline", "ICD-11 Literature"
+  clinicalNotes     String?
+
+  disease           Disease           @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  symptom           Symptom           @relation(fields: [symptomId], references: [id], onDelete: Cascade)
 
   @@unique([diseaseId, symptomId])
+  @@index([diseaseId])
+  @@index([symptomId])
 }
 
 model Prediction {
-  id               String    @id @default(cuid())
-  userId           String
-  selectedSymptoms String    // JSON stringified array of symptom IDs
-  results          String    // JSON stringified array of PredictionResults
-  llmAnalysis      String?
-  createdAt        DateTime  @default(now())
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  userId            String?
+
+  selectedSymptoms  String   // JSON stringified array of symptom IDs
+  results           String   // Full differential inference output
+  llmAnalysis       String?
+
+  engineType        String?  // "similarity-inference" | "llm-augmented"
+  algorithmVersion  String?  // e.g. "v2.1-weighted-profile"
+  modelVersion      String?  // e.g. "gemini-2.5-flash"
+  createdAt         DateTime @default(now())
+
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 ```
 
 ---
 
-## 📡 API Reference
+## 📡 REST API Reference
 
-### 1. Disease Prediction
+### 1. Execute Clinical Prediction
 - **Endpoint**: `POST /api/predict`
-- **Payload**:
+- **Request Body**:
   ```json
   {
-    "symptomIds": ["cuid-symptom-1", "cuid-symptom-2"],
-    "userId": "cuid-user-id", // optional
-    "engine": "local-ml",     // "local-ml" | "online-ai"
-    "privacyMode": false,     // if true, skips database history logging
-    "includeLLMAnalysis": true
+    "symptomIds": ["cmutusx340000qgp8397a6857", "cmutusx3d0002qgp821s131z1"],
+    "engine": "local-ml", // "local-ml" | "online-ai"
+    "privacyMode": false,
+    "includeLLMAnalysis": true,
+    "patientAge": 28,
+    "patientGender": "male"
   }
   ```
 - **Response**:
@@ -323,67 +406,69 @@ model Prediction {
   {
     "predictions": [
       {
-        "disease": "Dengue Fever",
-        "confidence": 88,
-        "description": "A mosquito-borne viral disease...",
-        "specialist": "Infectious Disease Specialist",
-        "severity": "severe",
-        "precautions": ["Use mosquito repellent", "Eliminate standing water"],
-        "medications": ["Paracetamol", "Oral rehydration salts"],
-        "diet": ["Papaya leaf juice", "Coconut water"],
-        "workout": ["Complete rest during acute phase"],
-        "matchedSymptoms": ["High Fever", "Joint Pain", "Skin Rash"],
-        "totalSymptoms": 12
+        "disease": "Bronchitis",
+        "similarityScore": 75,
+        "confidence": 75,
+        "description": "Inflammation of the bronchial tube lining...",
+        "specialist": "Pulmonologist",
+        "severity": "MODERATE",
+        "treatmentOverview": "Supportive care, hydration, rest, and airway monitoring.",
+        "precautions": ["Avoid smoke exposure", "Use air humidifier"],
+        "medications": ["Cough suppressant", "Albuterol inhaler (if prescribed)"],
+        "diet": ["Warm ginger tea", "Adequate fluid intake"],
+        "workout": ["Gentle respiratory exercises", "Rest during acute fever"],
+        "emergencyWarnings": ["Shortness of breath at rest", "Hemoptysis"],
+        "matchedSymptoms": ["Persistent Cough", "Chest Discomfort"],
+        "totalSymptoms": 8,
+        "contributingSymptoms": [
+          { "name": "Persistent Cough", "importance": "HALLMARK", "score": 85 },
+          { "name": "Chest Discomfort", "importance": "COMMON", "score": 65 }
+        ],
+        "absentHallmarks": [
+          { "name": "Sputum Production", "importance": "HALLMARK" }
+        ],
+        "algorithmVersion": "v2.1-weighted-profile"
       }
     ],
-    "llmAnalysis": "### Summary\nSymptoms strongly correlate with acute febrile illness...",
-    "predictionId": "cuid-prediction-record"
+    "llmAnalysis": "### Clinical Summary\nReported presentation aligns with acute lower airway irritation...",
+    "predictionId": "pred_cmux89218392",
+    "engine": "similarity-inference",
+    "algorithmVersion": "v2.1-weighted-profile"
   }
   ```
 
-### 2. AI Health Chatbot
+### 2. Conversational Health Assistant
 - **Endpoint**: `POST /api/chat`
-- **Payload**:
+- **Request Body**:
   ```json
   {
-    "message": "What should I do if I have a mild fever and throat pain?",
-    "history": [
-      { "role": "user", "content": "Hello" },
-      { "role": "assistant", "content": "Hello! How can I assist you with health questions today?" }
-    ]
+    "message": "I have sudden severe chest tightness and left arm numbness.",
+    "history": []
   }
   ```
 - **Response**:
   ```json
   {
-    "response": "For mild fever and throat discomfort, consider staying well-hydrated, resting, and..."
+    "response": "⚠️ **URGENT MEDICAL WARNING**: Your symptoms indicate possible cardiac ischemia (heart attack). Immediately call 1122 (Pakistan) or 911 (USA) or proceed to the nearest emergency department. Do not drive yourself."
   }
   ```
 
-### 3. Symptoms Listing
+### 3. Retrieve Symptom Taxonomy
 - **Endpoint**: `GET /api/symptoms`
-- **Response**: List of all 187+ symptoms and category-grouped dictionaries.
+- **Response**: Returns all 187+ symptoms with `slug`, `category`, `bodySystem`, `alternateNames`, and descriptions.
 
-### 4. Statistical Metrics
+### 4. Global Health Statistics
 - **Endpoint**: `GET /api/stats`
-- **Response**: Global counts of diseases, symptoms, total predictions run, and category distributions.
-
-### 5. Prediction History
-- **Endpoint**: `GET /api/history?userId=<USER_ID>&limit=10`
-- **Endpoint**: `DELETE /api/history?id=<PREDICTION_ID>`
-
-### 6. Authentication
-- **Endpoint**: `POST /api/auth/register` (name, email, password, age, gender, bloodGroup)
-- **Endpoint**: `POST /api/auth/login` (email, password)
+- **Response**: Total diseases, total symptoms, cumulative predictions, and category breakdowns.
 
 ---
 
 ## 🚀 Installation & Getting Started
 
 ### Prerequisites
-- **Node.js**: Version `18.18.0` or higher (Node 20+ recommended) OR **Bun**: Version `1.0.0`+
+- **Node.js**: `v20.0.0` or higher (or **Bun** `v1.0.0`+)
+- **PostgreSQL**: `v15` or higher running on `localhost:5432`
 - **Git**
-- **SQLite3**
 
 ### Step-by-Step Setup
 
@@ -392,75 +477,61 @@ model Prediction {
 git clone https://github.com/Yaldram81/smart-dr.git
 cd smart-dr
 
-# 2. Install dependencies (using Bun or npm)
-bun install
-# or: npm install
+# 2. Install dependencies
+npm install
 
 # 3. Configure environment variables
-# Copy or create your .env file
-cp .env.example .env
+# Create .env based on the template below
 ```
 
-Ensure `.env` contains:
+Create `.env` in the root directory:
 ```env
-DATABASE_URL="file:./db/custom.db"
-GEMINI_API_KEY="your_gemini_api_key_here"
+# PostgreSQL connection string
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/smart_dr?schema=public"
+
+# Google Gemini API Key for Online AI engine & health chat
+GEMINI_API_KEY="AIzaSyYourGeminiApiKeyHere"
+
+# Next.js Port (Default: 3001 or 3000)
+PORT=3001
 ```
 
 ```bash
-# 4. Generate Prisma Client and initialize the database
-bun run db:push
-# or: npx prisma db push
+# 4. Push database schema to PostgreSQL
+npx prisma db push
 
-# 5. Seed the database with 42+ diseases and 187+ clinical symptoms
-bun run db:seed
-# or: npx prisma db seed
+# 5. Seed the database (42+ conditions, 187+ symptoms, weights, and Urdu data)
+npx tsx prisma/seed.ts
 
-# 6. Launch the development server
-bun run dev
-# or: npm run dev
+# 6. Start the development server
+npm run dev
 ```
 
-Open your browser and navigate to:
+Navigate to:
 ```
-http://localhost:3000
+http://localhost:3001
 ```
 
 ---
 
 ## ⚙️ Environment Configuration
 
-| Variable | Description | Default / Example |
+| Variable | Description | Example |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:12345678@localhost:5432/smart_dr?schema=public` |
-| `GEMINI_API_KEY` | Google Gemini API key for Online AI predictions and chat | `AIzaSy...` |
-| `SESSION_SECRET` | HMAC-SHA256 session token encryption secret | `your_secure_random_key_32_chars` |
-| `NEXTAUTH_SECRET` | Secret key for session encryption (if using NextAuth) | `super_secret_key_32_chars` |
-| `NEXTAUTH_URL` | Canonical root URL of the deployment | `http://localhost:3000` |
+| `DATABASE_URL` | PostgreSQL connection URI | `postgresql://postgres:password@localhost:5432/smart_dr?schema=public` |
+| `GEMINI_API_KEY` | Google Gemini API Key for online generative reasoning | `AIzaSyD...` |
+| `SESSION_SECRET` | Secret key for HTTP-Only cookie session authentication | `super_secure_random_string_32_chars` |
 
 ---
 
-## 🌐 Deployment & Reverse Proxy Setup
+## 🌐 Production Deployment & Caddy Reverse Proxy
 
-Smart.Dr includes a pre-configured `Caddyfile` for instant deployment behind **Caddy Web Server**, enabling automatic SSL/TLS and port redirection:
+Smart.Dr includes a battle-tested `Caddyfile` for instant automated SSL/TLS provisioning and reverse proxying:
 
 ```caddy
 :81 {
-    @transform_port_query {
-        query XTransformPort=*
-    }
-
-    handle @transform_port_query {
-        reverse_proxy localhost:{query.XTransformPort} {
-            header_up Host {host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Real-IP {remote_host}
-        }
-    }
-
     handle {
-        reverse_proxy localhost:3000 {
+        reverse_proxy localhost:3001 {
             header_up Host {host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -470,73 +541,70 @@ Smart.Dr includes a pre-configured `Caddyfile` for instant deployment behind **C
 }
 ```
 
-### Production Build
+### Production Build Command
 ```bash
-# Build the optimized standalone Next.js bundle
-bun run build
-# or: npm run build
+# Create optimized production build with Turbopack
+npm run build
 
-# Start the production server
-bun run start
-# or: npm run start
+# Start production server
+npm run start
 ```
 
 ---
 
-## 📂 Project Directory Structure
+## 📂 Project Directory Layout
 
 ```text
 smart-dr/
 ├── Caddyfile                   # Caddy reverse proxy configuration
 ├── package.json                # Project dependencies, scripts & metadata
-├── tsconfig.json               # TypeScript compiler options
+├── tsconfig.json               # TypeScript strict configuration
 ├── tailwind.config.ts          # Tailwind CSS design system tokens
 ├── next.config.ts              # Next.js standalone and compiler config
 ├── prisma/
-│   ├── schema.prisma           # Prisma ORM database models
-│   └── seed.ts                 # Database seeding script (42+ conditions, 187+ symptoms)
-├── db/
-│   └── custom.db               # SQLite database storage file
+│   ├── schema.prisma           # Prisma ORM schema (PostgreSQL)
+│   └── seed.ts                 # Database seeder (42+ diseases, 187+ symptoms)
 ├── public/
 │   ├── fonts/
 │   │   └── JameelNooriNastaleeq.ttf # Authentic Urdu Nastaleeq font
-│   ├── logo.svg                # Smart.Dr brand emblem
-│   └── robots.txt              # Search engine crawler policies
+│   ├── logo.svg                # Smart.Dr brand icon
+│   └── manifest.json           # Progressive Web App manifest
 └── src/
-    ├── instrumentation.ts      # Node.js process & memory telemetry
     ├── app/
-    │   ├── layout.tsx          # Root layout, theme provider, Google font imports
-    │   ├── page.tsx            # Single-Page dynamic tab routing (Home, Checker, Results, Dash)
-    │   ├── globals.css         # Glassmorphism utilities & theme tokens
+    │   ├── layout.tsx          # Root layout, Nastaleeq font imports, metadata
+    │   ├── page.tsx            # Main tabbed interface (Overview, Diseases, Insights, About)
+    │   ├── checker/            # Dedicated Symptom Checker route
+    │   ├── results/            # Clinical Differential Results & PDF route
+    │   ├── dashboard/          # Personal Health Analytics route
+    │   ├── globals.css         # Glassmorphism utilities & CSS variables
     │   └── api/
-    │       ├── auth/           # Login & registration endpoints (bcryptjs)
+    │       ├── auth/           # Login, registration & me endpoints
     │       ├── chat/           # Gemini AI 24/7 health chat assistant
     │       ├── history/        # Consultation history CRUD
-    │       ├── predict/        # Dual-engine disease prediction endpoint
-    │       ├── stats/          # Global health statistics & metric counters
-    │       └── symptoms/       # Symptom taxonomy & category query route
+    │       ├── predict/        # Dual-engine prediction & explainability route
+    │       ├── stats/          # Health metric statistics
+    │       └── symptoms/       # Symptom query endpoint
     ├── components/
-    │   ├── chat/               # Health chatbot floating widget
-    │   ├── dashboard/          # BMI, Water Tracker, Med Reminders, Health Score, Analytics
-    │   ├── home/               # Hero, Disease Browser, Emergency Actions, Team, FAQ
-    │   ├── layout/             # Navigation header, language toggles, footer
-    │   ├── prediction-results/ # Confidence meter, severity badges, PDF/print generator
-    │   ├── symptom-checker/    # Body map, voice input, search, category accordions
+    │   ├── chat/               # Persistent floating health chatbot
+    │   ├── dashboard/          # BMI, Water Tracker, Med Reminders, Vitality Score
+    │   ├── home/               # Hero, Disease Browser, Emergency Actions, Developer Spotlight
+    │   ├── layout/             # Navigation bar, language picker, footer
+    │   ├── prediction-results/ # Radial similarity meter, explainability cards, PDF generator
+    │   ├── symptom-checker/    # 187+ symptoms, body systems, Consultation Tray
     │   └── ui/                 # Accessible shadcn/ui components (Radix primitives)
-    ├── hooks/                  # Toast & responsive device hooks
     └── lib/
-        ├── auth.ts             # Password hashing & user validation
+        ├── auth.ts             # Password hashing & JWT session management
         ├── db.ts               # Prisma singleton client instance
         ├── store.ts            # Zustand global application state
-        ├── urdu-translations.ts# Authentic Urdu medical terminology dictionary
+        ├── urdu-translations.ts# Comprehensive Urdu medical dictionary
         └── utils.ts            # ClassName merging utilities (clsx & twMerge)
 ```
 
 ---
 
-## 🎓 Academic & Development Credits
+## 🎓 Academic & Developer Credits
 
-**Smart.Dr** was conceptualized, designed, and engineered as an undergraduate **Final Year Project** for the degree of **Bachelor of Computer Science (BCS - 8th Semester)**.
+**Smart.Dr** was conceptualized, designed, and engineered as an undergraduate **Final Year Project** for the degree of **Bachelor of Computer Science (BCS — 8th Semester)**.
 
 ### 🏛 Academic Institution
 - **Department**: Department of Computer Science & Information Technology
@@ -544,10 +612,15 @@ smart-dr/
 - **Location**: Chakdara, Lower Dir, Khyber Pakhtunkhwa, Pakistan
 
 ### 👨‍💻 Project Developer
-- **Tanzeel Ur Rahman** (Lead Developer, Full-Stack Architecture & AI Integration)
-  - **GitHub**: [@Yaldram81](https://github.com/Yaldram81)
-  - **LinkedIn**: [Tanzeel Ur Rahman](https://www.linkedin.com/in/tanzeel-ur-rahman-71b7b2225/)
-  - **Email**: [tanzeelyaldram3@gmail.com](mailto:tanzeelyaldram3@gmail.com)
+<p align="left">
+  <strong>Tanzeel Ur Rahman</strong><br />
+  <em>Lead Developer & Full-Stack AI Systems Architect</em><br />
+  Degree: Bachelor of Computer Science (BCS — 8th Semester)<br />
+  Department of Computer Science & IT, University of Malakand<br />
+  🐙 <strong>GitHub</strong>: <a href="https://github.com/Yaldram81">@Yaldram81</a><br />
+  💼 <strong>LinkedIn</strong>: <a href="https://www.linkedin.com/in/tanzeel-ur-rahman-71b7b2225/">Tanzeel Ur Rahman</a><br />
+  ✉️ <strong>Email</strong>: <a href="mailto:tanzeelyaldram3@gmail.com">tanzeelyaldram3@gmail.com</a>
+</p>
 
 ### 👨‍🏫 Project Supervisors
 - **Dr. Pervez Khan** — *Associate Professor / Project Supervisor*
@@ -555,18 +628,17 @@ smart-dr/
 
 ---
 
-## ⚠️ Medical & Legal Disclaimer
+## ⚠️ Medical & Ethical Disclaimer
 
-> **IMPORTANT MEDICAL NOTICE**:
-> 
-> **Smart.Dr** is an academic research and educational decision-support project. It is **NOT** a certified medical diagnostic device and does not establish a doctor-patient relationship.
+> [!IMPORTANT]
+> **SMART.DR IS AN EDUCATIONAL DECISION-SUPPORT SYSTEM, NOT A REPLACEMENT FOR PROFESSIONAL MEDICAL DIAGNOSIS.**
 >
-> - The predictions, risk evaluations, and treatment suggestions generated by both the Local ML and Gemini AI engines are strictly for informational and triage guidance.
-> - **Never ignore professional clinical advice** or delay seeking medical attention because of information provided by this system.
-> - In the event of a medical emergency (such as severe chest pain, sudden numbness/paralysis, difficulty breathing, or severe trauma), immediately dial your local emergency services (e.g., **1122** in Pakistan or **911** in the USA) or proceed to the nearest emergency room.
+> - The similarity indices, risk classifications, and differential guidance generated by both the **Local Similarity Engine** and the **Google Gemini AI Engine** are strictly for educational triage and preliminary consultation reference.
+> - **Never ignore professional medical advice** or delay seeking clinical attention due to information provided by this system.
+> - In the event of a medical emergency (such as acute chest pain, sudden unilateral weakness/facial droop, severe respiratory distress, or profuse bleeding), immediately call your local emergency services (**1122** in Pakistan, **911** in the USA, **999** in the UK) or proceed directly to the nearest emergency department.
 
 ---
 
 <p align="center">
-  <sub>© 2026 Smart.Dr Development Team. All rights reserved. University of Malakand.</sub>
+  <sub>© 2026 Smart.Dr. Engineered with ❤️ by Tanzeel Ur Rahman. University of Malakand.</sub>
 </p>
